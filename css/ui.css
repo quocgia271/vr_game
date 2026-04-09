@@ -1,0 +1,227 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  overflow: hidden;
+}
+
+#ui-root {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+}
+
+#ui-root.panel-active {
+  pointer-events: auto;
+}
+
+#panel {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(420px, 92vw);
+  max-height: 88vh;
+  overflow: auto;
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(160deg, #fff9e6 0%, #ffe566 55%, #ffd54f 100%);
+  border: 3px solid #1a1a1a;
+  border-radius: 16px;
+  box-shadow: 8px 8px 0 #1a1a1a;
+  pointer-events: auto;
+}
+
+#panel h1 {
+  margin: 0 0 0.35rem;
+  font-size: 1.35rem;
+  color: #111;
+  text-align: center;
+}
+
+#panel .sub {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+#panel .ref {
+  display: block;
+  width: 100%;
+  max-height: 140px;
+  object-fit: contain;
+  border-radius: 8px;
+  border: 2px solid #111;
+  margin-bottom: 1rem;
+}
+
+.row {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 0.75rem;
+}
+
+.row label {
+  cursor: pointer;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.btn {
+  pointer-events: auto;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  padding: 0.65rem 1.2rem;
+  border: 3px solid #111;
+  border-radius: 10px;
+  background: #111;
+  color: #fff;
+  box-shadow: 4px 4px 0 #333;
+}
+
+.btn:hover {
+  transform: translate(1px, 1px);
+  box-shadow: 3px 3px 0 #333;
+}
+
+.btn.secondary {
+  background: #fff;
+  color: #111;
+}
+
+#hud {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  padding: 10px 14px;
+  background: rgba(0, 0, 0, 0.72);
+  color: #fff;
+  border-radius: 10px;
+  font-size: 14px;
+  line-height: 1.45;
+  max-width: min(320px, 85vw);
+  pointer-events: none;
+  display: none;
+}
+
+#hud.visible {
+  display: block;
+}
+
+#hud .warn {
+  color: #ffab91;
+  font-weight: 700;
+}
+
+#toast {
+  position: absolute;
+  bottom: 18%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 12px 20px;
+  background: rgba(0, 0, 0, 0.78);
+  color: #fff;
+  border-radius: 12px;
+  font-size: 15px;
+  opacity: 0;
+  transition: opacity 0.25s;
+  pointer-events: none;
+  text-align: center;
+  max-width: 90vw;
+}
+
+#toast.show {
+  opacity: 1;
+}
+
+#hint-bar {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #111;
+  border: 2px solid #111;
+  border-radius: 10px;
+  font-size: 13px;
+  pointer-events: none;
+  display: none;
+}
+
+#hint-bar.visible {
+  display: block;
+}
+/* --- LEVEL MODAL --- */
+#level-modal {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  backdrop-filter: blur(4px); /* Hiệu ứng mờ nền hiện đại */
+}
+
+#level-modal.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#level-modal .modal-content {
+  background: #fff;
+  padding: 2.5rem 2.5rem;
+  border-radius: 20px;
+  text-align: center;
+  max-width: 450px;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+  border: 3px solid #111;
+  transform: scale(0.8) translateY(20px);
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+#level-modal.visible .modal-content {
+  transform: scale(1) translateY(0);
+}
+
+#level-modal h2 {
+  margin: 0 0 1rem 0;
+  color: #111;
+  font-size: 2.2rem;
+  font-weight: 800;
+}
+
+#level-modal p {
+  color: #444;
+  font-size: 1.15rem;
+  margin-bottom: 2rem;
+  line-height: 1.5;
+}
+
+#level-modal .btn {
+  width: 100%;
+  font-size: 1.2rem;
+  padding: 0.9rem;
+  background: #ffe566;
+  color: #111;
+  border-color: #111;
+}
+
+#level-modal .btn:hover {
+  background: #ffd54f;
+}

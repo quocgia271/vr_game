@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>VR Color Circle — Bánh xe màu sắc</title>
+    <link rel="stylesheet" href="css/ui.css" />
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-physics-system@v4.2.2/dist/aframe-physics-system.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@c-frame/aframe-particle-system-component@1.2.0/dist/aframe-particle-system-component.min.js"></script>
+
+  </head>
+  <body>
+    <canvas id="wheelCanvas" width="1024" height="1024" hidden></canvas>
+
+    <div id="ui-root" class="panel-active">
+      <div id="panel">
+        <h1>VR Color Circle</h1>
+        <p class="sub">Phân loại màu theo cấp: Primary → Secondary → Tertiary</p>
+        <img class="ref" src="assets/wheel-reference.png" alt="Bánh xe màu tham chiếu" />
+        <div class="row">
+          <label><input type="radio" name="mode" id="modeEasy" checked /> Easy — không giới hạn thời gian</label>
+        </div>
+        <div class="row">
+          <label><input type="radio" name="mode" id="modeHard" /> Hard — giới hạn thời gian mỗi cấp</label>
+        </div>
+        <div class="row" style="margin-top: 1rem">
+          <button type="button" class="btn" id="btnStart">Bắt đầu</button>
+          <button type="button" class="btn secondary" id="btnEnterVr">Vào VR</button>
+        </div>
+        <p class="sub" style="margin-top: 1rem; font-size: 0.8rem">
+          Desktop: giữ chuột trái + rê để cầm bi theo con trỏ; chuột phải giữ + rê để xoay nhìn. Thả chuột trái để thả bi. VR: tia + trigger.
+        </p>
+      </div>
+      <div id="hud"></div>
+      <div id="toast"></div>
+      <div id="hint-bar">Trái: cầm bi + rê. Phải: xoay nhìn. Thả trái gần ô sáng đúng màu để gắn.</div>
+      <div id="level-modal" class="hidden">
+        <div class="modal-content">
+          <h2 id="modal-title">Level 1</h2>
+          <p id="modal-desc">Hãy chọn các viên bi màu Cấp 1.</p>
+          <button type="button" class="btn" id="btnModalClose">Đã hiểu & Bắt đầu</button>
+        </div>
+      </div>
+    </div>
+
+    <a-scene
+      id="mainScene"
+      physics="driver: local; gravity: -9.8"
+      webxr="optionalFeatures: local-floor, bounded-floor, hand-tracking, layers"
+      renderer="colorManagement: true; physicallyCorrectLights: false; antialias: true"
+      background="color: #2b2b2b"
+      fog="type: linear; color: #2b2b2b; near: 6; far: 18"
+      shadow="type: pcfsoft"
+    >
+      <a-assets>
+        <audio id="my-bgm" src="assets/nhac-nen.mp3" preload="auto"></audio>
+        <a-asset-item id="vn-font" src="https://raw.githubusercontent.com/etiennepinchon/aframe-fonts/master/fonts/notosans/NotoSans-Regular.json"></a-asset-item>
+      </a-assets>
+
+      <a-entity light="type: ambient; color: #fff; intensity: 0.65"></a-entity>
+      <a-entity light="type: directional; color: #fff; intensity: 0.55" position="1 4 2" castShadow="true"></a-entity>
+
+      <a-plane
+      position="0 0 -1"
+      rotation="-90 0 0"
+      width="24"
+      height="24"
+      color="#3a3a3a"
+      shadow="receive: true"
+      static-body="restitution: 0.75"
+    ></a-plane>
+
+    <a-entity id="gameBoard" position="0 0 0">
+        
+      <a-entity id="wheelRoot" position="0 0 0">
+        <a-text
+          value="Color Wheel"
+          position="0 3.6 -2.05"
+          align="center"
+          color="#ffffff"
+          width="6.5"
+          font="kelsonsans"
+        ></a-text>
+        <a-entity
+          id="wheelPlane"
+          position="0 1.7 -2.05"
+          geometry="primitive: circle; radius: 1.22; segments: 72"
+          material="color: #ffffff; shader: flat; side: double"
+          shadow="receive: true"
+        ></a-entity>
+        <a-entity 
+          id="bgm-player" 
+          position="0 1.7 -2.05"
+          sound="src: #my-bgm; loop: true; volume: 0.6; positional: true; distanceModel: linear; maxDistance: 8">
+        </a-entity>
+      </a-entity>
+
+      <a-entity id="ballsRoot"></a-entity>
+
+    </a-entity>
+      <!-- Start in VR (HTML overlay is hard to use in headset) -->
+      <a-entity id="vrMenu" position="0 1.6 -1.2">
+        <a-plane width="1.8" height="1.2" color="#ffe566" material="shader: flat; side: double"></a-plane>
+        <a-plane width="1.84" height="1.24" position="0 0 -0.01" color="#1a1a1a" material="shader: flat"></a-plane>
+
+        <a-text value="VR Color Circle" position="0 0.45 0.02" align="center" width="4" color="#111" font="kelsonsans"></a-text>
+        <a-text value="Phan loai mau: Primary - Secondary - Tertiary" position="0 0.3 0.02" align="center" width="1.6" color="#333"></a-text>
+
+        <a-plane id="vrStartPlane" class="interactable" position="0 0.05 0.02" width="1.2" height="0.25" color="#111" material="shader: flat">
+          <a-text class="interactable" value="Bat dau (Easy)" align="center" position="0 0 0.01" width="3" color="#fff"></a-text>
+        </a-plane>
+
+        <a-plane id="vrHardPlane" class="interactable" position="0 -0.3 0.02" width="1.2" height="0.2" color="#fff" material="shader: flat">
+          <a-plane width="1.24" height="0.24" position="0 0 -0.005" color="#111" material="shader: flat"></a-plane>
+          <a-text id="vrHardLabel" class="interactable" value="Che do: Easy" align="center" position="0 0 0.01" width="2.5" color="#111"></a-text>
+        </a-plane>
+      </a-entity>
+
+      <a-entity id="vrLevelModal" position="0 -999 0" visible="false">
+        <a-plane width="2" height="1.2" color="#fff" material="shader: flat; side: double"></a-plane>
+        <a-plane width="2.04" height="1.24" position="0 0 -0.01" color="#111" material="shader: flat"></a-plane>
+        
+        <a-text id="vrModalTitle" value="Level 1" position="0 0.35 0.02" align="center" width="4" color="#111" font="kelsonsans"></a-text>
+        <a-text id="vrModalDesc" value="Hay tim cac vien bi mau Cap 1" position="0 0.05 0.02" align="center" width="1.8" wrap-count="35" color="#333"></a-text>
+
+        <a-plane id="vrModalBtn" class="interactable" position="0 -0.35 0.02" width="1.2" height="0.25" color="#ffe566" material="shader: flat">
+          <a-plane width="1.24" height="0.29" position="0 0 -0.005" color="#111" material="shader: flat"></a-plane>
+          <a-text class="interactable" value="Da hieu & Bat dau" align="center" position="0 0 0.01" width="2.5" color="#111"></a-text>
+        </a-plane>
+      </a-entity>
+
+      <a-entity id="rig" position="0 1.6 0">
+        <a-camera id="cam" position="0 1.6 0" look-controls="pointerLockEnabled: false">
+          <a-entity
+            cursor="rayOrigin: mouse; fuse: false"
+            raycaster="far: 8; objects: .interactable"
+            geometry="primitive: ring; radiusInner: 0.008; radiusOuter: 0.012"
+            material="color: #ffffff; shader: flat"
+            position="0 0 -0.6"
+          ></a-entity>
+        
+          <a-entity id="vrHudGroup" position="-1 1 -1.2" visible="false">
+            <a-plane width="0.6" height="0.22" color="#000" opacity="0.6" material="shader: flat"></a-plane>
+            
+            <a-text 
+              id="vrHudText" 
+              value="Level 1\nTim bi mau..." 
+              position="0 0 0.01" 
+              align="center" 
+              width="1.2" 
+              color="#fff"
+            ></a-text>
+          </a-entity>
+          
+          <a-entity id="vrToast" position="0 -0.4 -1" visible="false">
+  
+            <a-plane width="1.35" height="0.15" color="#000" opacity="0.8" material="shader: flat"></a-plane>
+            
+            <a-text 
+              id="vrToastText" 
+              value="Chinh xac!" 
+              position="0 0 0.01" 
+              align="center" 
+              width="1.2" 
+              color="#fff"
+            ></a-text>
+            
+          </a-entity>
+        </a-camera>
+
+        <a-entity
+        id="handLeft"
+        laser-controls="hand: left"
+        cursor="fuse: false; rayOrigin: entity"
+        raycaster="far: 2.2; objects: .interactable; showLine: true; lineColor: #ff0000; lineOpacity: 1"
+      >
+        <a-box width="0.06" height="0.06" depth="0.12" color="#ff4444" position="0 0 0.05" opacity="0.8"></a-box>
+      </a-entity>
+      
+      <a-entity
+        id="handRight"
+        laser-controls="hand: right"
+        cursor="fuse: false; rayOrigin: entity"
+        raycaster="far: 2.2; objects: .interactable; showLine: true; lineColor: #00ff00; lineOpacity: 1"
+      >
+        <a-box width="0.06" height="0.06" depth="0.12" color="#44ff44" position="0 0 0.05" opacity="0.8"></a-box>
+      </a-entity>
+      </a-entity>
+    </a-scene>
+
+    <script src="js/colors.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/game.js"></script>
+  </body>
+</html>
