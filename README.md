@@ -44,6 +44,3 @@ WebXR + [A-Frame 1.6](https://aframe.io/): phân loại màu theo 3 cấp (Prima
 - `js/audio.js` — nhạc nền và SFX (Web Audio, không cần file ngoài).
 - `assets/wheel-reference.png` — ảnh tham chiếu đề.
 
-## Báo cáo / Slide
-
-Bạn tự soạn Word và PowerPoint dựa trên mục tiêu đề bài: thiết kế 3 level, Easy/Hard, tối ưu (hình học đơn giản, ít texture, `shader: flat`), hướng mở rộng (thêm sắc độ / điểm / bảng xếp hạng).
