@@ -1008,15 +1008,19 @@ function triggerSnapEffect(pos, hexColor) {
   function mainGameTick() {
     physicsSettlementTick(); // Giữ nguyên logic vật lý cũ
 
-    // LOGIC CHUYỂN ĐỘNG MƯỢT (LERP)
     if (activeGrabBall && activeGrabBall.object3D) {
       // 1. Nếu chơi VR, tính tọa độ đích chạy dọc theo tia laser
-      if (vrGrabHand) {
-        var rc = vrGrabHand.components.raycaster;
-        if (rc && rc.raycaster) {
-          var ray = rc.raycaster.ray;
-          targetHoldPos.copy(ray.origin).add(ray.direction.clone().multiplyScalar(grabDistance));
-        }
+      if (vrGrabHand && vrGrabHand.object3D) {
+        
+        // Bước A: Lấy vị trí tâm của tay cầm VR trong không gian thực
+        vrGrabHand.object3D.getWorldPosition(targetHoldPos);
+        
+        // Bước B: Xác định hướng chỉ tới trước của tia laser (Trục Z âm trong 3D)
+        var direction = new THREE.Vector3(0, 0, -1);
+        direction.transformDirection(vrGrabHand.object3D.matrixWorld);
+        
+        // Bước C: Tính điểm đích bằng Vị trí tay + (Hướng * Khoảng cách tới viên bi lúc chộp)
+        targetHoldPos.add(direction.multiplyScalar(grabDistance));
       }
 
       // 2. Chuyển đổi tọa độ World (targetHoldPos) sang hệ tọa độ của ballsRoot
