@@ -1149,9 +1149,13 @@ function triggerSnapEffect(pos, hexColor) {
 
   function bindHand(handEl) {
     if (!handEl) return;
+    var handHolding = false;
+    var lastGrabStartAt = 0;
 
     // Tách logic bốc bi ra một hàm riêng để dùng chung
-    function onGrabStart() {
+    function onGrabStart(evt) {
+      if (evt && evt.preventDefault) evt.preventDefault();
+      if (handHolding) return;
       GameAudio.resume();
       var rc = handEl.components.raycaster;
       if (!rc) return;
@@ -1183,24 +1187,39 @@ function triggerSnapEffect(pos, hexColor) {
           grabDistance = 1.2;
         }
         grabbed = { ball: el, hand: handEl };
+        handHolding = true;
+        lastGrabStartAt = Date.now();
         GameAudio.playPickup();
         return;
       }
     }
 
     // Tách logic thả bi ra một hàm riêng
-    function onGrabEnd() {
+    function onGrabEnd(evt) {
+      if (evt && evt.preventDefault) evt.preventDefault();
+      if (!handHolding) return;
+      // Quest Browser đôi lúc phát "up/end" rất sớm ngay sau "down/start" (nhả ảo).
+      if (Date.now() - lastGrabStartAt < 120) return;
       if (!grabbed || grabbed.hand !== handEl) return;
       var ball = grabbed.ball;
       grabbed = null;
       activeGrabBall = null;
       vrGrabHand = null;
+      handHolding = false;
       releaseBall(ball);
     }
 
-    // 1. Lắng nghe tay cầm vật lý (Controller)
+    // 1. Lắng nghe tay cầm vật lý (Controller) với nhiều event để tương thích Quest Browser.
     handEl.addEventListener('triggerdown', onGrabStart);
     handEl.addEventListener('triggerup', onGrabEnd);
+    handEl.addEventListener('gripdown', onGrabStart);
+    handEl.addEventListener('gripup', onGrabEnd);
+    handEl.addEventListener('selectstart', onGrabStart);
+    handEl.addEventListener('selectend', onGrabEnd);
+    handEl.addEventListener('squeezestart', onGrabStart);
+    handEl.addEventListener('squeezeend', onGrabEnd);
+    handEl.addEventListener('mousedown', onGrabStart);
+    handEl.addEventListener('mouseup', onGrabEnd);
 
     // 2. Lắng nghe bàn tay thật (Hand Tracking)
     handEl.addEventListener('pinchstarted', onGrabStart);
