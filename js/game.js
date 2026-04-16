@@ -40,6 +40,9 @@
   var MOUSE_HOLD_DIST = 0.55;
   var _holdVec = new THREE.Vector3();
   var _releaseWorld = new THREE.Vector3();
+  var _handRayOrigin = new THREE.Vector3();
+  var _handRayDir = new THREE.Vector3();
+  var _grabBallWorld = new THREE.Vector3();
   var desktopYaw = 0;
   var desktopPitch = 0;
   var rightLookDrag = false;
@@ -1011,16 +1014,21 @@ function triggerSnapEffect(pos, hexColor) {
     if (activeGrabBall && activeGrabBall.object3D) {
       // 1. Nếu chơi VR, tính tọa độ đích chạy dọc theo tia laser
       if (vrGrabHand && vrGrabHand.object3D) {
-        
-        // Bước A: Lấy vị trí tâm của tay cầm VR trong không gian thực
-        vrGrabHand.object3D.getWorldPosition(targetHoldPos);
-        
-        // Bước B: Xác định hướng chỉ tới trước của tia laser (Trục Z âm trong 3D)
-        var direction = new THREE.Vector3(0, 0, -1);
-        direction.transformDirection(vrGrabHand.object3D.matrixWorld);
-        
-        // Bước C: Tính điểm đích bằng Vị trí tay + (Hướng * Khoảng cách tới viên bi lúc chộp)
-        targetHoldPos.add(direction.multiplyScalar(grabDistance));
+        var rc = vrGrabHand.components && vrGrabHand.components.raycaster;
+        var rcRay = rc && rc.raycaster && rc.raycaster.ray;
+        var safeDistance = (isFinite(grabDistance) && grabDistance > 0.05) ? grabDistance : 1.2;
+
+        if (rcRay && rcRay.origin && rcRay.direction) {
+          // Ưu tiên dùng ray thực tế của controller để đồng nhất với tia laser trên kính thật.
+          _handRayOrigin.copy(rcRay.origin);
+          _handRayDir.copy(rcRay.direction).normalize();
+          targetHoldPos.copy(_handRayOrigin).add(_handRayDir.multiplyScalar(safeDistance));
+        } else {
+          // Fallback cho emulator/trường hợp raycaster chưa sẵn sàng.
+          vrGrabHand.object3D.getWorldPosition(targetHoldPos);
+          _handRayDir.set(0, 0, -1).transformDirection(vrGrabHand.object3D.matrixWorld);
+          targetHoldPos.add(_handRayDir.multiplyScalar(safeDistance));
+        }
       }
 
       // 2. Chuyển đổi tọa độ World (targetHoldPos) sang hệ tọa độ của ballsRoot
@@ -1148,7 +1156,17 @@ function triggerSnapEffect(pos, hexColor) {
       
         activeGrabBall = el;
         vrGrabHand = handEl;
-        grabDistance = hits[h].distance; 
+        grabDistance = hits[h].distance;
+        if (!(isFinite(grabDistance) && grabDistance > 0.05)) {
+          var rcRay = rc.raycaster && rc.raycaster.ray;
+          if (rcRay && rcRay.origin && el.object3D) {
+            el.object3D.getWorldPosition(_grabBallWorld);
+            grabDistance = _grabBallWorld.distanceTo(rcRay.origin);
+          }
+        }
+        if (!(isFinite(grabDistance) && grabDistance > 0.05)) {
+          grabDistance = 1.2;
+        }
         grabbed = { ball: el, hand: handEl };
         GameAudio.playPickup();
         return;
