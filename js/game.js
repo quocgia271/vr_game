@@ -43,6 +43,7 @@
   var _handRayOrigin = new THREE.Vector3();
   var _handRayDir = new THREE.Vector3();
   var _grabBallWorld = new THREE.Vector3();
+  var _vrLocalGrabPos = new THREE.Vector3();
   var desktopYaw = 0;
   var desktopPitch = 0;
   var rightLookDrag = false;
@@ -1018,6 +1019,19 @@ function triggerSnapEffect(pos, hexColor) {
         var rcRay = rc && rc.raycaster && rc.raycaster.ray;
         var safeDistance = (isFinite(grabDistance) && grabDistance > 0.05) ? grabDistance : 1.2;
 
+        // Ở VR thật (Quest), giữ bi làm con của controller giúp bám tay ổn định hơn phép nội suy world/local.
+        if (activeGrabBall.parentNode !== vrGrabHand) {
+          activeGrabBall.object3D.updateMatrixWorld(true);
+          activeGrabBall.object3D.getWorldPosition(_releaseWorld);
+          vrGrabHand.appendChild(activeGrabBall);
+          vrGrabHand.object3D.updateMatrixWorld(true);
+          vrGrabHand.object3D.worldToLocal(_releaseWorld);
+          activeGrabBall.setAttribute('position', _releaseWorld.x + ' ' + _releaseWorld.y + ' ' + _releaseWorld.z);
+        }
+
+        _vrLocalGrabPos.set(0, 0, -safeDistance);
+        activeGrabBall.setAttribute('position', _vrLocalGrabPos.x + ' ' + _vrLocalGrabPos.y + ' ' + _vrLocalGrabPos.z);
+
         if (rcRay && rcRay.origin && rcRay.direction) {
           // Ưu tiên dùng ray thực tế của controller để đồng nhất với tia laser trên kính thật.
           _handRayOrigin.copy(rcRay.origin);
@@ -1029,6 +1043,7 @@ function triggerSnapEffect(pos, hexColor) {
           _handRayDir.set(0, 0, -1).transformDirection(vrGrabHand.object3D.matrixWorld);
           targetHoldPos.add(_handRayDir.multiplyScalar(safeDistance));
         }
+        return;
       }
 
       // 2. Chuyển đổi tọa độ World (targetHoldPos) sang hệ tọa độ của ballsRoot
