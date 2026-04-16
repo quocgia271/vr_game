@@ -44,7 +44,6 @@
   var _handRayOrigin = new THREE.Vector3();
   var _handRayDir = new THREE.Vector3();
   var _grabBallWorld = new THREE.Vector3();
-  var _vrLocalGrabPos = new THREE.Vector3();
   var desktopYaw = 0;
   var desktopPitch = 0;
   var rightLookDrag = false;
@@ -1020,30 +1019,23 @@ function triggerSnapEffect(pos, hexColor) {
         var rcRay = rc && rc.raycaster && rc.raycaster.ray;
         var safeDistance = (isFinite(grabDistance) && grabDistance > 0.05) ? grabDistance : 1.2;
 
-        // Ở VR thật (Quest), giữ bi làm con của controller giúp bám tay ổn định hơn phép nội suy world/local.
-        if (activeGrabBall.parentNode !== vrGrabHand) {
-          activeGrabBall.object3D.updateMatrixWorld(true);
-          activeGrabBall.object3D.getWorldPosition(_releaseWorld);
-          vrGrabHand.appendChild(activeGrabBall);
-          vrGrabHand.object3D.updateMatrixWorld(true);
-          vrGrabHand.object3D.worldToLocal(_releaseWorld);
-          activeGrabBall.setAttribute('position', _releaseWorld.x + ' ' + _releaseWorld.y + ' ' + _releaseWorld.z);
-        }
-
-        _vrLocalGrabPos.set(0, 0, -safeDistance);
-        activeGrabBall.setAttribute('position', _vrLocalGrabPos.x + ' ' + _vrLocalGrabPos.y + ' ' + _vrLocalGrabPos.z);
-
         if (rcRay && rcRay.origin && rcRay.direction) {
-          // Ưu tiên dùng ray thực tế của controller để đồng nhất với tia laser trên kính thật.
           _handRayOrigin.copy(rcRay.origin);
           _handRayDir.copy(rcRay.direction).normalize();
           targetHoldPos.copy(_handRayOrigin).add(_handRayDir.multiplyScalar(safeDistance));
         } else {
-          // Fallback cho emulator/trường hợp raycaster chưa sẵn sàng.
           vrGrabHand.object3D.getWorldPosition(targetHoldPos);
           _handRayDir.set(0, 0, -1).transformDirection(vrGrabHand.object3D.matrixWorld);
           targetHoldPos.add(_handRayDir.multiplyScalar(safeDistance));
         }
+
+        // Chuyển target world sang local của ballsRoot và kéo bi bám theo tia.
+        ballsRoot.object3D.updateMatrixWorld(true);
+        var vrLocalTarget = targetHoldPos.clone();
+        ballsRoot.object3D.worldToLocal(vrLocalTarget);
+        currentHoldPos.copy(activeGrabBall.object3D.position);
+        currentHoldPos.lerp(vrLocalTarget, 0.6);
+        activeGrabBall.setAttribute('position', currentHoldPos.x + ' ' + currentHoldPos.y + ' ' + currentHoldPos.z);
         return;
       }
 
@@ -1172,6 +1164,8 @@ function triggerSnapEffect(pos, hexColor) {
         removePendingForBall(el);
         removeBallPhysics(el);
         el.removeAttribute('animation'); // Ngăn bi rơi nếu đang rớt mà chộp lại
+        el.setAttribute('visible', true);
+        if (el.object3D) el.object3D.visible = true;
         
       
         activeGrabBall = el;
