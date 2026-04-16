@@ -32,6 +32,7 @@
   var ndc = new THREE.Vector2();
   var cannonPhysicsOk = false;
   var physicsTickBound = false;
+  var vrTickComponentRegistered = false;
   var pendingPhysicsSnap = [];
   var BALL_PHYS_MASS = 0.42;
   var REST_VEL_SQ = 0.05;
@@ -1389,6 +1390,14 @@ function adjustHeight() {
       console.error('VR Color Circle: #mainScene not found');
       return;
     }
+    if (typeof AFRAME !== 'undefined' && !vrTickComponentRegistered && !AFRAME.components['vr-game-tick']) {
+      AFRAME.registerComponent('vr-game-tick', {
+        tick: function () {
+          mainGameTick();
+        }
+      });
+      vrTickComponentRegistered = true;
+    }
     drawWheelCanvas();
     applyWheelTexture();
     
@@ -1431,13 +1440,8 @@ function adjustHeight() {
       bindMouse();
       if (!physicsTickBound) {
         physicsTickBound = true;
-        
-        // Kích hoạt vòng lặp render chuẩn của trình duyệt
-        function gameLoop() {
-          mainGameTick();
-          requestAnimationFrame(gameLoop);
-        }
-        gameLoop(); 
+        // Dùng tick của A-Frame để chắc chắn chạy trong immersive WebXR trên Quest.
+        scene.setAttribute('vr-game-tick', '');
       }
       if (scene.pause) scene.pause();
     });
