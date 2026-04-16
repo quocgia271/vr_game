@@ -318,7 +318,7 @@
     // 1. Dừng toàn bộ các hiệu ứng fade-in đang chạy dở
     for (var key in fadeAnimationIds) {
       if (fadeAnimationIds[key]) {
-        cancelAnimationFrame(fadeAnimationIds[key]);
+        clearInterval(fadeAnimationIds[key]);
         fadeAnimationIds[key] = null;
       }
     }
@@ -336,30 +336,24 @@
   // Chạy hiệu ứng hiện màu từ từ trong 600ms
   function fadeInSlot(index, ringIndex) {
     var key = index + '_' + ringIndex;
-    var startTime = performance.now();
+    var startTime = Date.now();
     var duration = 600; 
 
     // Nếu ô này đang có hiệu ứng chạy dở thì hủy luôn để chạy cái mới
     if (fadeAnimationIds[key]) {
-      cancelAnimationFrame(fadeAnimationIds[key]);
+      clearInterval(fadeAnimationIds[key]);
     }
-
-    function step(time) {
-      var progress = (time - startTime) / duration;
-      if (progress > 1) progress = 1;
-      
-      slotOpacities[key] = progress; 
+    fadeAnimationIds[key] = setInterval(function () {
+      var progress = (Date.now() - startTime) / duration;
+      if (progress >= 1) {
+        progress = 1;
+        clearInterval(fadeAnimationIds[key]);
+        fadeAnimationIds[key] = null;
+      }
+      slotOpacities[key] = progress;
       drawWheelCanvas();
       if (wheelCanvasTexture) wheelCanvasTexture.needsUpdate = true;
-
-      if (progress < 1) {
-        fadeAnimationIds[key] = requestAnimationFrame(step);
-      } else {
-        fadeAnimationIds[key] = null; // Chạy xong thì xóa ID
-      }
-    }
-    
-    fadeAnimationIds[key] = requestAnimationFrame(step);
+    }, 30);
   }
 
   function slotWorldPosition(index, ringIndex) {
@@ -815,7 +809,6 @@ function triggerSnapEffect(pos, hexColor) {
     filledMask[best.index + '_' + best.ringIndex] = true; 
     fadeInSlot(best.index, best.ringIndex);
     removeBallPhysics(ballEl);
-    ballsRoot.appendChild(ballEl);
     
     var p = slotWorldPosition(best.index, best.ringIndex);
     ballEl.setAttribute('position', p.x + ' ' + p.y + ' ' + (p.z + 0.07));
@@ -1180,6 +1173,9 @@ function triggerSnapEffect(pos, hexColor) {
         }
         if (!(isFinite(grabDistance) && grabDistance > 0.05)) {
           grabDistance = 1.2;
+        }
+        if (grabDistance > 1.0) {
+          grabDistance = 1.0;
         }
         grabbed = { ball: el, hand: handEl };
         handHolding = true;
