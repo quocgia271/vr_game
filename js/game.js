@@ -585,7 +585,7 @@ function triggerFireworks(isVictory) {
   var emitDuration = isVictory ? 2.0 : 1.5;
 
   celebration.setAttribute('particle-system', {
-    preset: 'default',
+    texture: 'url(' + getStarTexture() + ')', // Dùng texture nội bộ thay vì tải preset default từ mạng
     color: colors,
     particleCount: count,
     direction: 1, 
@@ -621,8 +621,10 @@ function triggerFireworks(isVictory) {
   }, cleanupDelay);
 }
 
-// --- HÀM 1: TẠO TEXTURE HÌNH TRÒN SẮC NÉT (KHÔNG BÓNG MỜ) ---
+// --- HÀM 1: TẠO TEXTURE HÌNH TRÒN SẮC NÉT (KHÔNG BÓNG MỜ) CÓ CACHE ---
+var _cachedCircleTexture = null;
 function getCircleTexture() {
+  if (_cachedCircleTexture) return _cachedCircleTexture;
   var canvas = document.createElement('canvas');
   canvas.width = 64; 
   canvas.height = 64;
@@ -637,7 +639,32 @@ function getCircleTexture() {
   ctx.fillStyle = '#ffffff'; // Phải là màu trắng để pha ra đúng mã hexColor
   ctx.fill();
   
-  return canvas.toDataURL();
+  _cachedCircleTexture = canvas.toDataURL();
+  return _cachedCircleTexture;
+}
+
+// --- TẠO TEXTURE HÌNH NGÔI SAO HOẶC ĐIỂM SÁNG CHO PHÁO HOA ĐỂ KHÔNG PHẢI TẢI TỪ MẠNG ---
+var _cachedStarTexture = null;
+function getStarTexture() {
+  if (_cachedStarTexture) return _cachedStarTexture;
+  var canvas = document.createElement('canvas');
+  canvas.width = 64; 
+  canvas.height = 64;
+  var ctx = canvas.getContext('2d');
+  
+  // Tạo gradient tỏa sáng mượt mà từ tâm ra
+  var grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+  grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+  grad.addColorStop(0.3, 'rgba(255, 255, 255, 0.8)');
+  grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+  
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.arc(32, 32, 32, 0, Math.PI * 2);
+  ctx.fill();
+  
+  _cachedStarTexture = canvas.toDataURL();
+  return _cachedStarTexture;
 }
 
 // --- HÀM 2: CHẠY HIỆU ỨNG PARTICLE KHI DÁN BI THÀNH CÔNG ---
@@ -817,8 +844,24 @@ function triggerSnapEffect(pos, hexColor) {
     ballEl.setAttribute('position', p.x + ' ' + p.y + ' ' + (p.z + 0.07));
     var hexColor = WHEEL_COLORS[best.index].hex[best.ringIndex]; // Lấy mã màu của ô/bi
     triggerSnapEffect(p, hexColor);
-    ballEl.setAttribute('class', 'interactable');
+    
+    // Ngừng tương tác để tia raycaster bỏ qua viên bi này
+    ballEl.setAttribute('class', '');
     ballEl.setAttribute('data-placed', '1');
+    
+    // Thêm hiệu ứng thu nhỏ dần (giống như bị hút vào lỗ)
+    ballEl.setAttribute('animation__scale', {
+      property: 'scale',
+      to: '0 0 0',
+      dur: 350,
+      easing: 'easeInQuad'
+    });
+
+    // Ẩn hẳn viên bi sau khi thu nhỏ để tối ưu hiệu năng
+    setTimeout(function() {
+      ballEl.setAttribute('visible', 'false');
+    }, 400);
+
     GameAudio.playSnapOk();
     setSlotHighlight();
     setHud();
@@ -1436,6 +1479,21 @@ function adjustHeight() {
         // Dùng tick của A-Frame để chắc chắn chạy trong immersive WebXR trên Quest.
         scene.setAttribute('vr-game-tick', '');
       }
+      
+      // -- Warmup (Khởi động trước) Shaders cho Particle System để chống giật lag lần đầu bắn
+      var dummyParticle = document.createElement('a-entity');
+      dummyParticle.setAttribute('position', '0 -99 0');
+      dummyParticle.setAttribute('particle-system', {
+        texture: 'url(' + getStarTexture() + ')',
+        particleCount: 1,
+        maxAge: 0.1,
+        duration: 0.1
+      });
+      scene.appendChild(dummyParticle);
+      setTimeout(function() {
+        if (dummyParticle.parentNode) dummyParticle.parentNode.removeChild(dummyParticle);
+      }, 500);
+      
       if (scene.pause) scene.pause();
     });
     $('btnStart').addEventListener('click', function () {
