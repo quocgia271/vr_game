@@ -761,18 +761,18 @@ function triggerSnapEffect(pos, hexColor) {
       var onBody = function () {
         if (fired) return;
         fired = true;
-        // Gắn một chút vận tốc văng ngang và xoáy ngẫu nhiên (rất nhỏ) 
-        // Mục đích là phá vỡ trục rơi thẳng đứng hoàn hảo, giúp bi chạm đất sẽ nảy chéo đi và lăn nhẹ lộc cộc tự nhiên nhất.
+        // Gắn một chút vận tốc văng ngang và xoáy ngẫu nhiên đủ lớn
+        // Mục đích là phá vỡ trục rơi thẳng đứng, giúp bi chạm đất sẽ nảy chéo đi và lăn nhẹ lộc cộc thay vì nảy tại chỗ.
         if (el.body) {
           if (el.body.velocity && el.body.velocity.set) {
-             var randX = (Math.random() - 0.5) * 0.5; // Văng ngang ngẫu nhiên
-             var randZ = (Math.random() - 0.5) * 0.5;
+             var randX = (Math.random() - 0.5) * 1.2; // Tăng lực văng ngang ngẫu nhiên
+             var randZ = (Math.random() - 0.5) * 1.2;
              el.body.velocity.set(randX, 0, randZ);
           }
           if (el.body.angularVelocity && el.body.angularVelocity.set) {
-             var rotX = (Math.random() - 0.5) * 2.0;
-             var rotY = (Math.random() - 0.5) * 2.0;
-             var rotZ = (Math.random() - 0.5) * 2.0;
+             var rotX = (Math.random() - 0.5) * 10.0; // Tăng lực xoáy để khi chạm đất ma sát sẽ kéo bi chạy đi
+             var rotY = (Math.random() - 0.5) * 10.0;
+             var rotZ = (Math.random() - 0.5) * 10.0;
              el.body.angularVelocity.set(rotX, rotY, rotZ);
           }
         }
@@ -781,13 +781,13 @@ function triggerSnapEffect(pos, hexColor) {
       };
       el.addEventListener('body-loaded', onBody);
       
-      // Tăng nhẹ lực cản (damping 0.5) và ma sát (0.7) để bi lăn tự nhiên nhưng dừng lại nhanh, giới hạn trong phạm vi nhỏ.
+      // Giảm độ nảy (restitution: 0.1) và tăng cản (damping: 0.7) để va chạm vào nhau không bị văng xa
       var s =
   'shape: sphere; sphereRadius: ' +
   BALL_RADIUS +
   '; mass: ' +
   BALL_PHYS_MASS +
-  '; linearDamping: 0.5; angularDamping: 0.5; restitution: 0.3; friction: 0.7';
+  '; linearDamping: 0.7; angularDamping: 0.7; restitution: 0.1; friction: 0.8';
       el.setAttribute('dynamic-body', s);
       setTimeout(function () {
         if (fired) return;
@@ -796,14 +796,14 @@ function triggerSnapEffect(pos, hexColor) {
         
         if (el.body) {
           if (el.body.velocity && el.body.velocity.set) {
-             var randX = (Math.random() - 0.5) * 0.5;
-             var randZ = (Math.random() - 0.5) * 0.5;
+             var randX = (Math.random() - 0.5) * 1.2;
+             var randZ = (Math.random() - 0.5) * 1.2;
              el.body.velocity.set(randX, 0, randZ);
           }
           if (el.body.angularVelocity && el.body.angularVelocity.set) {
-             var rotX = (Math.random() - 0.5) * 2.0;
-             var rotY = (Math.random() - 0.5) * 2.0;
-             var rotZ = (Math.random() - 0.5) * 2.0;
+             var rotX = (Math.random() - 0.5) * 10.0;
+             var rotY = (Math.random() - 0.5) * 10.0;
+             var rotZ = (Math.random() - 0.5) * 10.0;
              el.body.angularVelocity.set(rotX, rotY, rotZ);
           }
         }
