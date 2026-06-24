@@ -64,10 +64,20 @@
     var vrToast = $('vrToast');
     var vrToastText = $('vrToastText');
     
-    // Đổi dấu tiếng Việt sang không dấu tạm thời (hoặc giữ nguyên nếu font xài tốt)
-    var safeMsg = msg.replace(/á/g,'a').replace(/à/g,'a').replace(/ã/g,'a').replace(/ạ/g,'a')
-                     .replace(/đ/g,'d').replace(/Đ/g,'D').replace(/ế/g,'e').replace(/ề/g,'e'); 
-                     // (Có thể viết 1 hàm bỏ dấu đầy đủ, hoặc truyền vào tiếng Anh)
+    // Dịch các câu thông báo sang tiếng Anh cho VR
+    var vrMsgMap = {
+      'Hết giờ! Thử lại (Hard).': 'Time is up! Try again.',
+      'Bạn đang đứng quá xa bảng màu! Hãy tiến lại gần.': 'Too far! Move closer.',
+      'Sai vị trí! Thử ô đúng trên vòng.': 'Wrong slot! Try again.',
+      'Chiến thắng! Hoàn thành cả 3 cấp.': 'Victory! All levels completed.'
+    };
+    
+    var safeMsg = vrMsgMap[msg] || msg;
+    // Bắt trường hợp báo bắt đầu màn
+    if (msg.indexOf('Màn') === 0 && msg.indexOf('Bắt đầu') > 0) {
+      var match = msg.match(/\d+/);
+      if (match) safeMsg = 'Level ' + match[0] + ': Start!';
+    }
 
     if (vrToast && vrToastText) {
       vrToastText.setAttribute('value', safeMsg);
@@ -85,6 +95,12 @@
     "Thử thách 3: Khó nhất đây! Hãy tìm các viên bi màu Bậc 3 (Tertiary) nằm lẫn lộn để hoàn thành bánh xe màu sắc."
   ];
 
+  var levelInstructionsVr = [
+    "Challenge 1: Find and place all Primary colors.",
+    "Challenge 2: Great job! Now find all Secondary colors.",
+    "Challenge 3: The hardest part! Find and place the mixed Tertiary colors."
+  ];
+
   function showLevelModal(levelIndex, onConfirm) {
     // 1. NẾU ĐANG CHƠI TRONG KÍNH VR
     if (scene && scene.is('vr-mode')) {
@@ -96,21 +112,9 @@
         return;
       }
 
-      // Đổi dấu tiếng Việt sang không dấu (hoặc giữ nguyên nếu bạn đã cài đặt font chuẩn)
-      var descVi = levelInstructions[levelIndex];
-      var safeDesc = descVi.replace(/á|à|ả|ã|ạ|ă|ắ|ằ|ẳ|ẵ|ặ|â|ấ|ầ|ẩ|ẫ|ậ/g, 'a')
-                           .replace(/é|è|ẻ|ẽ|ẹ|ê|ế|ề|ể|ễ|ệ/g, 'e')
-                           .replace(/í|ì|ỉ|ĩ|ị/g, 'i')
-                           .replace(/ó|ò|ỏ|õ|ọ|ô|ố|ồ|ổ|ỗ|ộ|ơ|ớ|ờ|ở|ỡ|ợ/g, 'o')
-                           .replace(/ú|ù|ủ|ũ|ụ|ư|ứ|ừ|ử|ữ|ự/g, 'u')
-                           .replace(/ý|ỳ|ỷ|ỹ|ỵ/g, 'y')
-                           .replace(/đ/g, 'd')
-                           .replace(/Á|À|Ả|Ã|Ạ|Ă|Ắ|Ằ|Ẳ|Ẵ|Ặ|Â|Ấ|Ầ|Ẩ|Ẫ|Ậ/g, 'A')
-                           .replace(/Đ/g, 'D');
-
-      // Cập nhật Text 3D
+      // Cập nhật Text 3D sang Tiếng Anh
       $('vrModalTitle').setAttribute('value', 'Level ' + (levelIndex + 1));
-      $('vrModalDesc').setAttribute('value', safeDesc);
+      $('vrModalDesc').setAttribute('value', levelInstructionsVr[levelIndex]);
       
       // Đưa Modal ra ngang tầm mắt người chơi
       vrModal.setAttribute('visible', 'true');
@@ -194,10 +198,10 @@
     var vrHudText = $('vrHudText');
     var vrHudGroup = $('vrHudGroup');
     if (vrHudText && vrHudGroup) {
-      // Dùng tiếng Việt không dấu cho an toàn trong VR
-      var vrLine1 = 'Cap ' + lv.name + ': ' + lv.subtitleVi;
-      var vrLine2 = 'Da gan: ' + done + ' / ' + need;
-      var vrLine3 = modeHard ? 'Time: ' + Math.ceil(timeLeft) + 's' : 'Che do: Easy';
+      // Dùng tiếng Anh trong VR
+      var vrLine1 = 'Tier ' + lv.name + ': ' + lv.subtitleVi;
+      var vrLine2 = 'Placed: ' + done + ' / ' + need;
+      var vrLine3 = modeHard ? 'Time: ' + Math.ceil(timeLeft) + 's' : 'Mode: Easy';
       vrHudText.setAttribute('value', vrLine1 + '\n' + vrLine2 + '\n' + vrLine3);
       vrHudGroup.setAttribute('visible', 'true');
     }
@@ -758,20 +762,35 @@ function triggerSnapEffect(pos, hexColor) {
         if (fired) return;
         fired = true;
         el.removeEventListener('body-loaded', onBody);
+        
+        // Xóa vận tốc tay lúc nhả để bi rơi tự nhiên thẳng xuống, không bị văng
+        if (el.body) {
+          if (el.body.velocity && el.body.velocity.set) el.body.velocity.set(0, 0, 0);
+          if (el.body.angularVelocity && el.body.angularVelocity.set) el.body.angularVelocity.set(0, 0, 0);
+        }
+        
         if (syncFromHome) syncPhysicsBodyFromDataHome(el);
       };
       el.addEventListener('body-loaded', onBody);
+      
+      // Tăng ma sát (friction), lực cản (damping), giảm độ nảy (restitution)
       var s =
   'shape: sphere; sphereRadius: ' +
   BALL_RADIUS +
   '; mass: ' +
   BALL_PHYS_MASS +
-  '; linearDamping: 0.1; angularDamping: 0.1; restitution: 0.8';
+  '; linearDamping: 0.8; angularDamping: 0.8; restitution: 0.2; friction: 0.8';
       el.setAttribute('dynamic-body', s);
       setTimeout(function () {
         if (fired) return;
         fired = true;
         el.removeEventListener('body-loaded', onBody);
+        
+        if (el.body) {
+          if (el.body.velocity && el.body.velocity.set) el.body.velocity.set(0, 0, 0);
+          if (el.body.angularVelocity && el.body.angularVelocity.set) el.body.angularVelocity.set(0, 0, 0);
+        }
+
         if (syncFromHome && el.body) syncPhysicsBodyFromDataHome(el);
       }, 320);
     } catch (err) {
@@ -1369,12 +1388,12 @@ function triggerSnapEffect(pos, hexColor) {
   function syncVrHardLabel() {
     var lab = $('vrHardLabel');
     if (lab) {
-      lab.setAttribute('value', modeHard ? 'Che do: Hard (Co gio)' : 'Che do: Easy (Khong gio)');
+      lab.setAttribute('value', modeHard ? 'Mode: Hard (Timed)' : 'Mode: Easy (No time)');
     }
     var pe = $('vrStartPlane');
     if (pe) {
       var texts = pe.querySelectorAll('a-text');
-      if (texts[0]) texts[0].setAttribute('value', modeHard ? 'Bat dau (Hard)' : 'Bat dau (Easy)');
+      if (texts[0]) texts[0].setAttribute('value', modeHard ? 'Start (Hard)' : 'Start (Easy)');
     }
   }
 

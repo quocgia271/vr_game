@@ -68,11 +68,23 @@
       height="24"
       color="#3a3a3a"
       shadow="receive: true"
-      static-body="restitution: 0.75"
+      static-body="restitution: 0.2; friction: 0.8"
     ></a-plane>
 
     <a-entity id="gameBoard" position="0 0 0">
         
+      <!-- Khay đựng bi màu trắng -->
+      <a-box 
+        id="ballTray" 
+        position="-1.3 0.35 -1.35" 
+        width="1.6" 
+        height="0.1" 
+        depth="1.6" 
+        color="#eeeeee" 
+        shadow="receive: true" 
+        static-body="restitution: 0.1; friction: 0.9"
+      ></a-box>
+
       <a-entity id="wheelRoot" position="0 0 0">
         <a-text
           value="Color Wheel"
@@ -105,15 +117,15 @@
         <a-plane width="1.84" height="1.24" position="0 0 -0.01" color="#1a1a1a" material="shader: flat"></a-plane>
 
         <a-text value="VR Color Circle" position="0 0.45 0.02" align="center" width="4" color="#111" font="kelsonsans"></a-text>
-        <a-text value="Phan loai mau: Primary - Secondary - Tertiary" position="0 0.3 0.02" align="center" width="1.6" color="#333"></a-text>
+        <a-text value="Colors: Primary - Secondary - Tertiary" position="0 0.3 0.02" align="center" width="1.6" color="#333"></a-text>
 
         <a-plane id="vrStartPlane" class="interactable" position="0 0.05 0.02" width="1.2" height="0.25" color="#111" material="shader: flat">
-          <a-text class="interactable" value="Bat dau (Easy)" align="center" position="0 0 0.01" width="3" color="#fff"></a-text>
+          <a-text class="interactable" value="Start (Easy)" align="center" position="0 0 0.01" width="3" color="#fff"></a-text>
         </a-plane>
 
         <a-plane id="vrHardPlane" class="interactable" position="0 -0.3 0.02" width="1.2" height="0.2" color="#fff" material="shader: flat">
           <a-plane width="1.24" height="0.24" position="0 0 -0.005" color="#111" material="shader: flat"></a-plane>
-          <a-text id="vrHardLabel" class="interactable" value="Che do: Easy" align="center" position="0 0 0.01" width="2.5" color="#111"></a-text>
+          <a-text id="vrHardLabel" class="interactable" value="Mode: Easy" align="center" position="0 0 0.01" width="2.5" color="#111"></a-text>
         </a-plane>
       </a-entity>
 
@@ -122,11 +134,11 @@
         <a-plane width="2.04" height="1.24" position="0 0 -0.01" color="#111" material="shader: flat"></a-plane>
         
         <a-text id="vrModalTitle" value="Level 1" position="0 0.35 0.02" align="center" width="4" color="#111" font="kelsonsans"></a-text>
-        <a-text id="vrModalDesc" value="Hay tim cac vien bi mau Cap 1" position="0 0.05 0.02" align="center" width="1.8" wrap-count="35" color="#333"></a-text>
+        <a-text id="vrModalDesc" value="Find the Level 1 colors" position="0 0.05 0.02" align="center" width="1.8" wrap-count="35" color="#333"></a-text>
 
         <a-plane id="vrModalBtn" class="interactable" position="0 -0.35 0.02" width="1.2" height="0.25" color="#ffe566" material="shader: flat">
           <a-plane width="1.24" height="0.29" position="0 0 -0.005" color="#111" material="shader: flat"></a-plane>
-          <a-text class="interactable" value="Da hieu & Bat dau" align="center" position="0 0 0.01" width="2.5" color="#111"></a-text>
+          <a-text class="interactable" value="Got it & Start" align="center" position="0 0 0.01" width="2.5" color="#111"></a-text>
         </a-plane>
       </a-entity>
 
@@ -145,7 +157,7 @@
             
             <a-text 
               id="vrHudText" 
-              value="Level 1\nTim bi mau..." 
+              value="Level 1\nFind colors..." 
               position="0 0 0.01" 
               align="center" 
               width="1.2" 
@@ -159,7 +171,7 @@
             
             <a-text 
               id="vrToastText" 
-              value="Chinh xac!" 
+              value="Correct!" 
               position="0 0 0.01" 
               align="center" 
               width="1.2" 
