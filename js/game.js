@@ -518,39 +518,42 @@
     // Bắn pháo hoa khi qua màn (màu vàng/cam)
     triggerFireworks(false);
 
-    currentLevel++;
-    if (currentLevel >= LEVELS.length) {
-      $('hud').classList.remove('visible');
-      $('hint-bar').classList.remove('visible');
-      GameAudio.playVictory();
-      
-      // BỔ SUNG: Bắn pháo hoa chiến thắng (nhiều màu sắc)
-      triggerFireworks(true);
+    // Đợi 3.5 giây để người chơi ngắm bảng màu hoàn thiện và pháo hoa
+    setTimeout(function() {
+      currentLevel++;
+      if (currentLevel >= LEVELS.length) {
+        $('hud').classList.remove('visible');
+        $('hint-bar').classList.remove('visible');
+        GameAudio.playVictory();
+        
+        // BỔ SUNG: Bắn pháo hoa chiến thắng (nhiều màu sắc)
+        triggerFireworks(true);
 
-      showToast('Chiến thắng! Hoàn thành cả 3 cấp.', 3500);
-      $('panel').style.display = 'block';
-      $('ui-root').classList.add('panel-active');
-      setVrMenuVisible(true);
-      
-      // CHỈNH SỬA: Đợi 3 giây cho pháo hoa rơi xong rồi mới pause game
-      setTimeout(function() {
-        if (scene.pause) scene.pause();
-      }, 4000);
+        showToast('Chiến thắng! Hoàn thành cả 3 cấp.', 3500);
+        $('panel').style.display = 'block';
+        $('ui-root').classList.add('panel-active');
+        setVrMenuVisible(true);
+        
+        // CHỈNH SỬA: Đợi 4 giây cho pháo hoa rơi xong rồi mới pause game
+        setTimeout(function() {
+          if (scene.pause) scene.pause();
+        }, 4000);
 
-      return;
-    }
-    
-    filledMask = {};
-    resetWheelOpacities();
-    for (var s = 0; s < slots.length; s++) slots[s].filled = false;
-    spawnBallsForLevel();
-    setSlotHighlight();
-    
-    // GỌI MODAL CHUYỂN MÀN
-    showLevelModal(currentLevel, function() {
-      startTimerIfHard();
-      setHud();
-    });
+        return;
+      }
+      
+      filledMask = {};
+      resetWheelOpacities();
+      for (var s = 0; s < slots.length; s++) slots[s].filled = false;
+      spawnBallsForLevel();
+      setSlotHighlight();
+      
+      // GỌI MODAL CHUYỂN MÀN
+      showLevelModal(currentLevel, function() {
+        startTimerIfHard();
+        setHud();
+      });
+    }, 3500);
   }
   // --- THÊM HÀM NÀY VÀO TRONG js/game.js ---
 // --- HÀM BẮN PHÁO HOA & PHÁO GIẤY SIÊU RỰC RỠ (Đã nâng cấp) ---
@@ -565,8 +568,8 @@ function triggerFireworks(isVictory) {
   var wheel = $('wheelRoot');
   if (!wheel) return;
 
-  // Giảm số lượng xuống cực ít (150 hạt lúc qua màn, 600 hạt lúc phá đảo)
-  var count = isVictory ? 600 : 150; 
+  // Tăng số lượng để ấn tượng hơn
+  var count = isVictory ? 700 : 350; 
   var colors = [
     '#FF1493', '#00FF00', '#00FFFF', '#FFFF00', 
     '#FF4500', '#FF00FF', '#8A2BE2', '#FFFFFF'
@@ -579,7 +582,7 @@ function triggerFireworks(isVictory) {
   // Z = -2.5 (Nằm lùi sâu ra phía sau bánh xe màu đang ở -2.05)
   celebration.setAttribute('position', '0 0.5 -7');
 
-  var emitDuration = isVictory ? 1.5 : 0.5;
+  var emitDuration = isVictory ? 2.0 : 1.5;
 
   celebration.setAttribute('particle-system', {
     preset: 'default',
@@ -597,7 +600,7 @@ function triggerFireworks(isVictory) {
     velocitySpread: '6 4 0',  
     
     accelerationValue: '0 -5 0', 
-    maxAge: 2.5, // Hạt sống lâu hơn để bay cao và rơi xuống    
+    maxAge: 3.5, // Hạt sống lâu hơn để bay cao và rơi xuống (từ 2.5 lên 3.5)    
 
     // Kích thước hạt hơi to một chút để dễ nhìn thấy khi số lượng ít
     size: '1.5',     
