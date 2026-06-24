@@ -761,24 +761,19 @@ function triggerSnapEffect(pos, hexColor) {
       var onBody = function () {
         if (fired) return;
         fired = true;
-        // Giữ lại 10% vận tốc văng của tay cầm (và giới hạn tối đa) để bi rơi có độ văng nhẹ lộc cộc tự nhiên
+        // Gắn một chút vận tốc văng ngang và xoáy ngẫu nhiên (rất nhỏ) 
+        // Mục đích là phá vỡ trục rơi thẳng đứng hoàn hảo, giúp bi chạm đất sẽ nảy chéo đi và lăn nhẹ lộc cộc tự nhiên nhất.
         if (el.body) {
           if (el.body.velocity && el.body.velocity.set) {
-             var vx = el.body.velocity.x * 0.1;
-             var vy = el.body.velocity.y * 0.1;
-             var vz = el.body.velocity.z * 0.1;
-             // Khống chế không cho văng ngang quá mạnh
-             if (vx > 0.3) vx = 0.3; if (vx < -0.3) vx = -0.3;
-             if (vz > 0.3) vz = 0.3; if (vz < -0.3) vz = -0.3;
-             el.body.velocity.set(vx, vy, vz);
+             var randX = (Math.random() - 0.5) * 0.5; // Văng ngang ngẫu nhiên
+             var randZ = (Math.random() - 0.5) * 0.5;
+             el.body.velocity.set(randX, 0, randZ);
           }
-          // Giữ lại chút lực xoay
           if (el.body.angularVelocity && el.body.angularVelocity.set) {
-             el.body.angularVelocity.set(
-               el.body.angularVelocity.x * 0.2,
-               el.body.angularVelocity.y * 0.2,
-               el.body.angularVelocity.z * 0.2
-             );
+             var rotX = (Math.random() - 0.5) * 2.0;
+             var rotY = (Math.random() - 0.5) * 2.0;
+             var rotZ = (Math.random() - 0.5) * 2.0;
+             el.body.angularVelocity.set(rotX, rotY, rotZ);
           }
         }
         
@@ -798,24 +793,18 @@ function triggerSnapEffect(pos, hexColor) {
         if (fired) return;
         fired = true;
         el.removeEventListener('body-loaded', onBody);
-        // Giữ lại 10% vận tốc văng của tay cầm (và giới hạn tối đa) để bi rơi có độ văng nhẹ lộc cộc tự nhiên, không bị rớt thẳng đuột 1 đường cọc lóc.
+        
         if (el.body) {
           if (el.body.velocity && el.body.velocity.set) {
-             var vx = el.body.velocity.x * 0.1;
-             var vy = el.body.velocity.y * 0.1;
-             var vz = el.body.velocity.z * 0.1;
-             // Khống chế không cho văng ngang quá mạnh
-             if (vx > 0.3) vx = 0.3; if (vx < -0.3) vx = -0.3;
-             if (vz > 0.3) vz = 0.3; if (vz < -0.3) vz = -0.3;
-             el.body.velocity.set(vx, vy, vz);
+             var randX = (Math.random() - 0.5) * 0.5;
+             var randZ = (Math.random() - 0.5) * 0.5;
+             el.body.velocity.set(randX, 0, randZ);
           }
-          // Giữ lại chút lực xoay
           if (el.body.angularVelocity && el.body.angularVelocity.set) {
-             el.body.angularVelocity.set(
-               el.body.angularVelocity.x * 0.2,
-               el.body.angularVelocity.y * 0.2,
-               el.body.angularVelocity.z * 0.2
-             );
+             var rotX = (Math.random() - 0.5) * 2.0;
+             var rotY = (Math.random() - 0.5) * 2.0;
+             var rotZ = (Math.random() - 0.5) * 2.0;
+             el.body.angularVelocity.set(rotX, rotY, rotZ);
           }
         }
 
