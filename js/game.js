@@ -478,7 +478,7 @@
     var spacingX = 0.22; // Khoảng cách ngang
     var spacingZ = 0.22; // Khoảng cách dọc
     var startX = -((cols - 1) * spacingX) / 2 - 1.8; // Căn giữa
-    var startZ = -0.4;   // Đẩy lùi ra xa người chơi một chút
+    var startZ = -0.1;   // Đẩy lùi ra xa người chơi một chút
     var baseY = 0.4;    // Chiều cao mặt bàn
 
     // 4. Đổ bi ra bàn
