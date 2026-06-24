@@ -477,7 +477,7 @@
     
     var spacingX = 0.22; // Khoảng cách ngang
     var spacingZ = 0.22; // Khoảng cách dọc
-    var startX = -((cols - 1) * spacingX) / 2-1.3; // Căn giữa
+    var startX = -((cols - 1) * spacingX) / 2 - 1.8; // Căn giữa
     var startZ = -0.8;   // Đẩy lùi ra xa người chơi một chút
     var baseY = 0.4;    // Chiều cao mặt bàn
 
@@ -1541,14 +1541,16 @@ function adjustHeight() {
 
     var hudMenuBtn = $('vrHudMenuBtn');
     if (hudMenuBtn) {
-      hudMenuBtn.addEventListener('click', function() {
-        setVrMenuVisible(true);
-      });
+      function toggleVrMenu() {
+        var m = $('vrMenu');
+        if (!m) return;
+        var isVis = m.getAttribute('visible') === true || m.getAttribute('visible') === 'true';
+        setVrMenuVisible(!isVis);
+      }
+      hudMenuBtn.addEventListener('click', toggleVrMenu);
       var btnTexts = hudMenuBtn.querySelectorAll('a-text.interactable');
       for (var bi = 0; bi < btnTexts.length; bi++) {
-         btnTexts[bi].addEventListener('click', function() {
-           setVrMenuVisible(true);
-         });
+         btnTexts[bi].addEventListener('click', toggleVrMenu);
       }
     }
     function onVrStart() {
