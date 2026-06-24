@@ -153,16 +153,21 @@
           ></a-entity>
         
           <a-entity id="vrHudGroup" position="-0.4 0.4 -1.2" visible="false">
-            <a-plane width="0.8" height="0.3" color="#000" opacity="0.6" material="shader: flat"></a-plane>
+            <a-plane width="0.8" height="0.4" color="#000" opacity="0.6" material="shader: flat"></a-plane>
             
             <a-text 
               id="vrHudText" 
               value="Level 1\nFind colors..." 
-              position="0 0 0.01" 
+              position="0 0.06 0.01" 
               align="center" 
               width="1.2" 
               color="#fff"
             ></a-text>
+
+            <!-- Nút bấm quay về Menu -->
+            <a-plane id="vrHudMenuBtn" class="interactable" position="0 -0.12 0.01" width="0.4" height="0.12" color="#cc3333" material="shader: flat">
+               <a-text class="interactable" value="Main Menu" align="center" position="0 0 0.01" width="1.8" color="#fff"></a-text>
+            </a-plane>
           </a-entity>
           
           <a-entity id="vrToast" position="0 -0.4 -1" visible="false">

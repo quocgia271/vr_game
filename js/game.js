@@ -1563,6 +1563,50 @@
       if (hl) hl.addEventListener('click', onVrHardToggle);
     }
     syncVrHardLabel();
+    
+    // --- THÊM CHỨC NĂNG NÚT MAIN MENU TRÊN HUD ---
+    var vrHudMenuBtn = $('vrHudMenuBtn');
+    if (vrHudMenuBtn) {
+       var onVrMenuClick = function() {
+           // 1. Dừng thời gian
+           clearTimer();
+           
+           // 2. Ẩn HUD và Modal (nếu đang bật)
+           var hud = $('vrHudGroup');
+           if (hud) hud.setAttribute('visible', 'false');
+           
+           var vrModal = $('vrLevelModal');
+           if (vrModal) {
+               vrModal.setAttribute('visible', 'false');
+               vrModal.setAttribute('position', '0 -999 0');
+           }
+           
+           // 3. Xóa toàn bộ bi cũ trên bàn
+           var ballsRoot = $('ballsRoot');
+           if (ballsRoot) {
+               var balls = ballsRoot.querySelectorAll('.ball');
+               for (var i = 0; i < balls.length; i++) {
+                   removeBallPhysics(balls[i]);
+                   ballsRoot.removeChild(balls[i]);
+               }
+           }
+           
+           // 4. Reset tiến trình
+           currentLevel = 0;
+           filledMask = {};
+           if (slots) {
+             for (var s = 0; s < slots.length; s++) slots[s].filled = false;
+           }
+           resetWheelOpacities();
+           
+           // 5. Hiện lại bảng Menu VR ban đầu
+           setVrMenuVisible(true);
+           syncVrHardLabel();
+       };
+       vrHudMenuBtn.addEventListener('click', onVrMenuClick);
+       var menuTexts = vrHudMenuBtn.querySelectorAll('a-text.interactable');
+       for (var t = 0; t < menuTexts.length; t++) menuTexts[t].addEventListener('click', onVrMenuClick);
+    }
     $('btnEnterVr').addEventListener('click', function () {
       GameAudio.resume();
       if (scene.enterVR) scene.enterVR();
