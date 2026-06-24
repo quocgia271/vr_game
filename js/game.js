@@ -1256,8 +1256,8 @@ function triggerSnapEffect(pos, hexColor) {
         if (!(isFinite(grabDistance) && grabDistance > 0.05)) {
           grabDistance = 1.2;
         }
-        if (grabDistance > 5.5) {
-          grabDistance = 5.5;
+        if (grabDistance > 2.0) {
+          grabDistance = 2.0;
         }
         grabbed = { ball: el, hand: handEl };
         handHolding = true;
