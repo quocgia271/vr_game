@@ -25,7 +25,7 @@
   var SNAP_DIST = 0.48;
   var BALL_RADIUS = 0.11;
   /* Wheel height (m); keep in sync with #wheelPlane position Y in index.html */
-  var WHEEL_CENTER = { x: 0, y: 1.7, z: -2.05 };
+  var WHEEL_CENTER = { x: 0, y: 1.3, z: -1.35 };
   var WHEEL_RADIUS = 1.02;
   var RING_RADII = [1.02, 0.68, 0.35];
   var raycaster = new THREE.Raycaster();
@@ -583,8 +583,8 @@ function triggerFireworks(isVictory) {
   
   // 1. ĐỔI TỌA ĐỘ BẮN: 
   // Y = 0.5 (Nằm thấp ở dưới)
-  // Z = -2.5 (Nằm lùi sâu ra phía sau bánh xe màu đang ở -2.05)
-  celebration.setAttribute('position', '0 0.5 -7');
+  // Z = -2.5 (Nằm lùi sâu ra phía sau bánh xe màu đang ở -1.35)
+  celebration.setAttribute('position', '0 0.5 -2.0');
 
   var emitDuration = isVictory ? 2.0 : 1.5;
 
@@ -1181,7 +1181,7 @@ function triggerSnapEffect(pos, hexColor) {
     raycaster.setFromCamera(ndc, cam);
     var o = raycaster.ray.origin;
     var d = raycaster.ray.direction;
-    var targetZ = -1.95; 
+    var targetZ = -1.25; 
     var t = (targetZ - o.z) / d.z;
     
     // Lưu tọa độ đích vào biến toàn cục (Tọa độ World)
@@ -1444,9 +1444,9 @@ function adjustHeight() {
   // Fallback an toàn: nếu kính VR chưa kịp nhận diện sàn, lấy mức 1.6m làm chuẩn
   if (currentCamY < 0.5) currentCamY = 1.6; 
   
-  // Tâm bánh xe trong thiết kế đang cao 1.7m. 
-  // Trừ đi 1.7 để tìm ra độ lệch cần thiết nâng/hạ toàn bộ gameBoard.
-  var targetY = currentCamY - 1.7; 
+  // Tâm bánh xe trong thiết kế đang cao 1.3m. 
+  // Trừ đi 1.3 để tìm ra độ lệch cần thiết nâng/hạ toàn bộ gameBoard.
+  var targetY = currentCamY - 1.3; 
   
   var board = $('gameBoard');
   if (board) {
@@ -1538,6 +1538,19 @@ function adjustHeight() {
       syncVrHardLabel();
       startGame();
     });
+
+    var hudMenuBtn = $('vrHudMenuBtn');
+    if (hudMenuBtn) {
+      hudMenuBtn.addEventListener('click', function() {
+        setVrMenuVisible(true);
+      });
+      var btnTexts = hudMenuBtn.querySelectorAll('a-text.interactable');
+      for (var bi = 0; bi < btnTexts.length; bi++) {
+         btnTexts[bi].addEventListener('click', function() {
+           setVrMenuVisible(true);
+         });
+      }
+    }
     function onVrStart() {
       var mhR = $('modeHard');
       modeHard = !!(mhR && mhR.checked);
