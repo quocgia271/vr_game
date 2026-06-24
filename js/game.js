@@ -59,11 +59,11 @@
     var t = $('toast');
     t.textContent = msg;
     t.classList.add('show');
-    
+
     // === THÊM CODE HIỂN THỊ VR TOAST ===
     var vrToast = $('vrToast');
     var vrToastText = $('vrToastText');
-    
+
     // Dịch các câu thông báo sang tiếng Anh cho VR
     var vrMsgMap = {
       'Hết giờ! Thử lại (Hard).': 'Time is up! Try again.',
@@ -71,7 +71,7 @@
       'Sai vị trí! Thử ô đúng trên vòng.': 'Wrong slot! Try again.',
       'Chiến thắng! Hoàn thành cả 3 cấp.': 'Victory! All levels completed.'
     };
-    
+
     var safeMsg = vrMsgMap[msg] || msg;
     // Bắt trường hợp báo bắt đầu màn
     if (msg.indexOf('Màn') === 0 && msg.indexOf('Bắt đầu') > 0) {
@@ -105,7 +105,7 @@
     // 1. NẾU ĐANG CHƠI TRONG KÍNH VR
     if (scene && scene.is('vr-mode')) {
       var vrModal = $('vrLevelModal');
-      
+
       if (!vrModal) { // Đề phòng lỗi chưa load kịp HTML
         showToast('Màn ' + (levelIndex + 1) + ': Bắt đầu!', 3000);
         if (onConfirm) onConfirm();
@@ -115,31 +115,31 @@
       // Cập nhật Text 3D sang Tiếng Anh
       $('vrModalTitle').setAttribute('value', 'Level ' + (levelIndex + 1));
       $('vrModalDesc').setAttribute('value', levelInstructionsVr[levelIndex]);
-      
+
       // Đưa Modal ra ngang tầm mắt người chơi
       vrModal.setAttribute('visible', 'true');
-      
+
       // Tính toán lại chiều cao theo mắt người chơi
       var camPos = new THREE.Vector3();
       if (camEl && camEl.object3D) {
-         camEl.object3D.getWorldPosition(camPos);
-         // Đặt Y bằng tầm mắt, Z thụt về trước mặt 1.25 mét
-         vrModal.setAttribute('position', '0 ' + camPos.y + ' -1.25');
+        camEl.object3D.getWorldPosition(camPos);
+        // Đặt Y bằng tầm mắt, Z thụt về trước mặt 1.25 mét
+        vrModal.setAttribute('position', '0 ' + camPos.y + ' -1.25');
       } else {
-         // Fallback nếu chưa lấy được camera
-         vrModal.setAttribute('position', '0 1.6 -1.25');
+        // Fallback nếu chưa lấy được camera
+        vrModal.setAttribute('position', '0 1.6 -1.25');
       }
 
       // Lắng nghe sự kiện người chơi dùng tia laser bấm "Đã hiểu"
       var btn = $('vrModalBtn');
-      var clickHandler = function() {
+      var clickHandler = function () {
         btn.removeEventListener('click', clickHandler); // Xoá event sau khi bấm
         vrModal.setAttribute('visible', 'false');
         vrModal.setAttribute('position', '0 -999 0'); // Giấu modal đi
         if (onConfirm) onConfirm();
       };
       btn.addEventListener('click', clickHandler);
-      
+
       return;
     }
 
@@ -148,15 +148,15 @@
     var modal = $('level-modal');
     $('modal-title').textContent = 'Level ' + (levelIndex + 1);
     $('modal-desc').textContent = levelInstructions[levelIndex];
-    
-    $('ui-root').classList.add('panel-active'); 
+
+    $('ui-root').classList.add('panel-active');
     modal.classList.add('visible');
-    
+
     var btn = $('btnModalClose');
     var newBtn = btn.cloneNode(true);
     btn.parentNode.replaceChild(newBtn, btn);
-    
-    newBtn.addEventListener('click', function() {
+
+    newBtn.addEventListener('click', function () {
       this.blur();
       if (document.activeElement) {
         document.activeElement.blur();
@@ -164,9 +164,9 @@
 
       modal.classList.remove('visible');
       if ($('panel').style.display === 'none') {
-         $('ui-root').classList.remove('panel-active');
+        $('ui-root').classList.remove('panel-active');
       }
-      
+
       window.focus();
       if (scene && scene.canvas) {
         scene.canvas.focus();
@@ -179,15 +179,15 @@
     var hud = $('hud');
     var lv = LEVELS[currentLevel];
     if (!lv) return;
-    var need = lv.indices.length * 3; 
+    var need = lv.indices.length * 3;
     var done = 0;
-    
+
     for (var i = 0; i < lv.indices.length; i++) {
       for (var r = 0; r < 3; r++) {
         if (filledMask[lv.indices[i] + '_' + r]) done++;
       }
     }
-    
+
     var line1 = 'Cấp ' + lv.name + ': ' + lv.titleVi + ' (' + lv.subtitleVi + ')';
     var line2 = 'Gắn đúng: ' + done + ' / ' + need;
     var line3 = modeHard ? 'Thời gian: ' + Math.ceil(timeLeft) + 's' : 'Easy — không giới hạn';
@@ -260,20 +260,20 @@
         ctx.moveTo(cx, cy);
         ctx.arc(cx, cy, r * ringFracs[rIdx], a0, a1);
         ctx.closePath();
-        
+
         // 1. Vẽ nền xám nhạt (biểu thị ô trống chưa có màu)
-        ctx.fillStyle = '#dcdcdc'; 
+        ctx.fillStyle = '#dcdcdc';
         ctx.globalAlpha = 1.0;
         ctx.fill();
-        
+
         // 2. Vẽ màu thực tế đè lên với hiệu ứng fade
         var op = slotOpacities[i + '_' + rIdx] || 0;
         if (op > 0) {
-          ctx.fillStyle = WHEEL_COLORS[i].hex[rIdx]; 
+          ctx.fillStyle = WHEEL_COLORS[i].hex[rIdx];
           ctx.globalAlpha = op;
           ctx.fill();
         }
-        
+
         // Vẽ viền trắng phân cách các ô
         ctx.globalAlpha = 1.0;
         ctx.strokeStyle = 'rgba(255,255,255,0.6)';
@@ -290,7 +290,7 @@
     ctx.strokeStyle = '#ddd';
     ctx.lineWidth = 2;
     ctx.stroke();
-    
+
     return canvas;
   }
 
@@ -302,13 +302,13 @@
     function paint() {
       var mesh = plane.getObject3D('mesh');
       if (!mesh || !mesh.material) return;
-      
+
       // Lưu texture vào biến toàn cục wheelCanvasTexture
       wheelCanvasTexture = new THREE.CanvasTexture(canvas);
       if (THREE.SRGBColorSpace) wheelCanvasTexture.colorSpace = THREE.SRGBColorSpace;
       wheelCanvasTexture.anisotropy = 4;
       wheelCanvasTexture.needsUpdate = true;
-      
+
       mesh.material.map = wheelCanvasTexture;
       mesh.material.color.setHex(0xffffff);
       mesh.material.needsUpdate = true;
@@ -341,7 +341,7 @@
   function fadeInSlot(index, ringIndex) {
     var key = index + '_' + ringIndex;
     var startTime = Date.now();
-    var duration = 600; 
+    var duration = 600;
 
     // Nếu ô này đang có hiệu ứng chạy dở thì hủy luôn để chạy cái mới
     if (fadeAnimationIds[key]) {
@@ -394,29 +394,29 @@
   // Đặt hàm này ngay dưới hàm buildSlots() hiện tại
   function buildLabels() {
     if (!wheelRoot) return;
-    
-    var labelRadius = 1.55; 
-    
+
+    var labelRadius = 1.55;
+
     for (var i = 0; i < 12; i++) {
       var col = WHEEL_COLORS[i];
       var theta = Math.PI / 2 - (i + 0.5) * (Math.PI / 6);
-      
+
       var x = WHEEL_CENTER.x + labelRadius * Math.cos(theta);
       var y = WHEEL_CENTER.y + labelRadius * Math.sin(theta);
       var z = WHEEL_CENTER.z;
-      
+
       var textEl = document.createElement('a-text');
       textEl.setAttribute('position', x + ' ' + y + ' ' + z);
       textEl.setAttribute('align', 'center');
       textEl.setAttribute('color', '#ffffff');
-      
+
       // CHỈNH SỬA 1: Giảm width từ 3.5 xuống 2.5 để chữ nhỏ lại và thanh mảnh hơn
       textEl.setAttribute('width', '2.5');
-      
+
       // CHỈNH SỬA 2: Chỉ lấy col.id, bỏ phần ghép chuỗi tier ở phía sau
       textEl.setAttribute('value', col.id);
-      
-      
+
+
       wheelRoot.appendChild(textEl);
     }
   }
@@ -428,7 +428,7 @@
     for (var s = 0; s < slots.length; s++) {
       var sl = slots[s];
       // Ẩn hoàn toàn khối lục giác 3D
-      sl.el.setAttribute('visible', 'false'); 
+      sl.el.setAttribute('visible', 'false');
     }
   }
 
@@ -471,13 +471,13 @@
 
     // 3. Tính toán kích thước lưới ma trận tùy theo số lượng bi
     var totalBalls = ballDataList.length;
-    var cols = 3; 
+    var cols = 3;
     if (totalBalls > 9 && totalBalls <= 18) cols = 6; // Level 2: 18 bi -> xếp 6 cột 3 hàng
     if (totalBalls > 18) cols = 6;                    // Level 3: 36 bi -> xếp 6 cột 6 hàng
-    
+
     var spacingX = 0.22; // Khoảng cách ngang
     var spacingZ = 0.22; // Khoảng cách dọc
-    var startX = -((cols - 1) * spacingX) / 2-1.3; // Căn giữa
+    var startX = -((cols - 1) * spacingX) / 2 - 1.3; // Căn giữa
     var startZ = -0.8;   // Đẩy lùi ra xa người chơi một chút
     var baseY = 0.4;    // Chiều cao mặt bàn
 
@@ -518,18 +518,18 @@
   function nextLevel() {
     clearTimer();
     GameAudio.playLevelWin();
-    
+
     // Bắn pháo hoa khi qua màn (màu vàng/cam)
     triggerFireworks(false);
 
     // Đợi 3.5 giây để người chơi ngắm bảng màu hoàn thiện và pháo hoa
-    setTimeout(function() {
+    setTimeout(function () {
       currentLevel++;
       if (currentLevel >= LEVELS.length) {
         $('hud').classList.remove('visible');
         $('hint-bar').classList.remove('visible');
         GameAudio.playVictory();
-        
+
         // BỔ SUNG: Bắn pháo hoa chiến thắng (nhiều màu sắc)
         triggerFireworks(true);
 
@@ -537,179 +537,179 @@
         $('panel').style.display = 'block';
         $('ui-root').classList.add('panel-active');
         setVrMenuVisible(true);
-        
+
         // CHỈNH SỬA: Đợi 4 giây cho pháo hoa rơi xong rồi mới pause game
-        setTimeout(function() {
+        setTimeout(function () {
           if (scene.pause) scene.pause();
         }, 4000);
 
         return;
       }
-      
+
       filledMask = {};
       resetWheelOpacities();
       for (var s = 0; s < slots.length; s++) slots[s].filled = false;
       spawnBallsForLevel();
       setSlotHighlight();
-      
+
       // GỌI MODAL CHUYỂN MÀN
-      showLevelModal(currentLevel, function() {
+      showLevelModal(currentLevel, function () {
         startTimerIfHard();
         setHud();
       });
     }, 3500);
   }
   // --- THÊM HÀM NÀY VÀO TRONG js/game.js ---
-// --- HÀM BẮN PHÁO HOA & PHÁO GIẤY SIÊU RỰC RỠ (Đã nâng cấp) ---
-// --- HÀM BẮN PHÁO HOA GỌN GÀNG, RỰC RỠ TẠI BẢNG MÀU ---
-// --- HÀM BẮN PHÁO HOA NHỎ, RÕ NÉT, RƠI XUỐNG VÀ FADE OUT ---
-// --- HÀM BẮN PHÁO GIẤY: ÍT HẠT, SẮC NÉT, KHÔNG MỜ ---
-// --- HÀM BẮN PHÁO HOA LUNG LINH, PHÁT SÁNG, RỰC RỠ ---
-// --- HÀM BẮN PHÁO HOA: TÁCH RỜI, NẰM HẲN PHÍA SAU BẢNG MÀU ---
-// --- HÀM BẮN PHÁO HOA: TÁCH RỜI, NẰM HẲN PHÍA SAU BẢNG MÀU ---
-// --- HÀM BẮN PHÁO HOA: ÍT HẠT, RỜI RẠC, BẮN LÊN TỪ DƯỚI SAU BẢNG ---
-function triggerFireworks(isVictory) {
-  var wheel = $('wheelRoot');
-  if (!wheel) return;
+  // --- HÀM BẮN PHÁO HOA & PHÁO GIẤY SIÊU RỰC RỠ (Đã nâng cấp) ---
+  // --- HÀM BẮN PHÁO HOA GỌN GÀNG, RỰC RỠ TẠI BẢNG MÀU ---
+  // --- HÀM BẮN PHÁO HOA NHỎ, RÕ NÉT, RƠI XUỐNG VÀ FADE OUT ---
+  // --- HÀM BẮN PHÁO GIẤY: ÍT HẠT, SẮC NÉT, KHÔNG MỜ ---
+  // --- HÀM BẮN PHÁO HOA LUNG LINH, PHÁT SÁNG, RỰC RỠ ---
+  // --- HÀM BẮN PHÁO HOA: TÁCH RỜI, NẰM HẲN PHÍA SAU BẢNG MÀU ---
+  // --- HÀM BẮN PHÁO HOA: TÁCH RỜI, NẰM HẲN PHÍA SAU BẢNG MÀU ---
+  // --- HÀM BẮN PHÁO HOA: ÍT HẠT, RỜI RẠC, BẮN LÊN TỪ DƯỚI SAU BẢNG ---
+  function triggerFireworks(isVictory) {
+    var wheel = $('wheelRoot');
+    if (!wheel) return;
 
-  // Tăng số lượng để ấn tượng hơn
-  var count = isVictory ? 700 : 350; 
-  var colors = [
-    '#FF1493', '#00FF00', '#00FFFF', '#FFFF00', 
-    '#FF4500', '#FF00FF', '#8A2BE2', '#FFFFFF'
-  ].join(',');
+    // Tăng số lượng để ấn tượng hơn
+    var count = isVictory ? 700 : 350;
+    var colors = [
+      '#FF1493', '#00FF00', '#00FFFF', '#FFFF00',
+      '#FF4500', '#FF00FF', '#8A2BE2', '#FFFFFF'
+    ].join(',');
 
-  var celebration = document.createElement('a-entity');
-  
-  // 1. ĐỔI TỌA ĐỘ BẮN: 
-  // Y = 0.5 (Nằm thấp ở dưới)
-  // Z = -2.5 (Nằm lùi sâu ra phía sau bánh xe màu đang ở -2.05)
-  celebration.setAttribute('position', '0 0.5 -7');
+    var celebration = document.createElement('a-entity');
 
-  var emitDuration = isVictory ? 2.0 : 1.5;
+    // 1. ĐỔI TỌA ĐỘ BẮN: 
+    // Y = 0.5 (Nằm thấp ở dưới)
+    // Z = -2.5 (Nằm lùi sâu ra phía sau bánh xe màu đang ở -2.05)
+    celebration.setAttribute('position', '0 0.5 -7');
 
-  celebration.setAttribute('particle-system', {
-    texture: 'url(' + getStarTexture() + ')', // Dùng texture nội bộ thay vì tải preset default từ mạng
-    color: colors,
-    particleCount: count,
-    direction: 1, 
-    
-    // 2. TÁCH RỜI HẠT: Cho các hạt xuất hiện dàn trải trên một đường ngang rộng 3 mét
-    positionSpread: '3 0.2 0',
+    var emitDuration = isVictory ? 2.0 : 1.5;
 
-    // 3. LỰC BẮN MẠNH: Đẩy vọt lên cao (Y=10) để trồi lên từ phía sau bảng
-    velocityValue: '0 10 0',       
-    
-    // Độ văng sang 2 bên vừa phải
-    velocitySpread: '6 4 0',  
-    
-    accelerationValue: '0 -5 0', 
-    maxAge: 3.5, // Hạt sống lâu hơn để bay cao và rơi xuống (từ 2.5 lên 3.5)    
+    celebration.setAttribute('particle-system', {
+      texture: 'url(' + getStarTexture() + ')', // Dùng texture nội bộ thay vì tải preset default từ mạng
+      color: colors,
+      particleCount: count,
+      direction: 1,
 
-    // Kích thước hạt hơi to một chút để dễ nhìn thấy khi số lượng ít
-    size: '1.5',     
-    randomise: true, 
-    blending: 1, 
-    
-    opacity: '1, 0',            
-    duration: emitDuration      
-  });
+      // 2. TÁCH RỜI HẠT: Cho các hạt xuất hiện dàn trải trên một đường ngang rộng 3 mét
+      positionSpread: '3 0.2 0',
 
-  wheel.appendChild(celebration);
+      // 3. LỰC BẮN MẠNH: Đẩy vọt lên cao (Y=10) để trồi lên từ phía sau bảng
+      velocityValue: '0 10 0',
 
-  var cleanupDelay = (emitDuration + 2.5) * 1000 + 200; 
-  setTimeout(function() {
-    if (celebration.parentNode) {
-      celebration.parentNode.removeChild(celebration);
-    }
-  }, cleanupDelay);
-}
+      // Độ văng sang 2 bên vừa phải
+      velocitySpread: '6 4 0',
 
-// --- HÀM 1: TẠO TEXTURE HÌNH TRÒN SẮC NÉT (KHÔNG BÓNG MỜ) CÓ CACHE ---
-var _cachedCircleTexture = null;
-function getCircleTexture() {
-  if (_cachedCircleTexture) return _cachedCircleTexture;
-  var canvas = document.createElement('canvas');
-  canvas.width = 64; 
-  canvas.height = 64;
-  var ctx = canvas.getContext('2d');
-  
-  // Làm sạch nền (để nền hoàn toàn trong suốt)
-  ctx.clearRect(0, 0, 64, 64);
-  
-  // Vẽ hình tròn cơ bản sắc nét, KHÔNG dùng shadowBlur để tránh lỗi viền
-  ctx.beginPath();
-  ctx.arc(32, 32, 30, 0, Math.PI * 2);
-  ctx.fillStyle = '#ffffff'; // Phải là màu trắng để pha ra đúng mã hexColor
-  ctx.fill();
-  
-  _cachedCircleTexture = canvas.toDataURL();
-  return _cachedCircleTexture;
-}
+      accelerationValue: '0 -5 0',
+      maxAge: 3.5, // Hạt sống lâu hơn để bay cao và rơi xuống (từ 2.5 lên 3.5)    
 
-// --- TẠO TEXTURE HÌNH NGÔI SAO HOẶC ĐIỂM SÁNG CHO PHÁO HOA ĐỂ KHÔNG PHẢI TẢI TỪ MẠNG ---
-var _cachedStarTexture = null;
-function getStarTexture() {
-  if (_cachedStarTexture) return _cachedStarTexture;
-  var canvas = document.createElement('canvas');
-  canvas.width = 64; 
-  canvas.height = 64;
-  var ctx = canvas.getContext('2d');
-  
-  // Tạo gradient tỏa sáng mượt mà từ tâm ra
-  var grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
-  grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
-  grad.addColorStop(0.3, 'rgba(255, 255, 255, 0.8)');
-  grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
-  
-  ctx.fillStyle = grad;
-  ctx.beginPath();
-  ctx.arc(32, 32, 32, 0, Math.PI * 2);
-  ctx.fill();
-  
-  _cachedStarTexture = canvas.toDataURL();
-  return _cachedStarTexture;
-}
+      // Kích thước hạt hơi to một chút để dễ nhìn thấy khi số lượng ít
+      size: '1.5',
+      randomise: true,
+      blending: 1,
 
-// --- HÀM 2: CHẠY HIỆU ỨNG PARTICLE KHI DÁN BI THÀNH CÔNG ---
-function triggerSnapEffect(pos, hexColor) {
-  var effect = document.createElement('a-entity');
-  
-  effect.setAttribute('position', pos.x + ' ' + pos.y + ' ' + (pos.z + 0.05));
+      opacity: '1, 0',
+      duration: emitDuration
+    });
 
-  effect.setAttribute('particle-system', {
-    texture: 'url(' + getCircleTexture() + ')',
-    color: hexColor,               // Lấy đúng màu của bi
-    
-    type: 3,                       // Kiểu 3: Hình đĩa (Disc) - ép hạt sinh ra theo hình tròn
-    particleCount: 25,             
-    
-    // MẸO: Sinh hạt ngẫu nhiên trong một bán kính hình tròn là 0.15 
-    // (Thay vì bắt chúng bắn từ tâm ra xa)
-    positionSpread: '0.15 0.15 0', 
-    
-    velocityValue: '0 0 0',        
-    velocitySpread: '0.02 0.02 0', // Vận tốc cực nhỏ, gần như chỉ đứng yên tại chỗ
-    accelerationValue: '0 0 0',    
-    
-    maxAge: 0.35,                  // Tồn tại trong thời gian ngắn
-    size: '0.15',                  // Kích thước hạt nhỏ gọn
-    randomise: true,
-    
-    // QUAN TRỌNG NHẤT: blending 1 (Normal) giữ nguyên màu gốc, không làm sáng chói
-    blending: 1,                   
-    opacity: '1, 0',               // Xuất hiện rõ rồi mờ dần
-    duration: 0.1                  // Chỉ phụt ra 1 nhịp duy nhất
-  });
+    wheel.appendChild(celebration);
 
-  var wheel = $('wheelRoot');
-  if (wheel) {
-    wheel.appendChild(effect);
-    setTimeout(function() {
-      if (effect.parentNode) effect.parentNode.removeChild(effect);
-    }, 1000);
+    var cleanupDelay = (emitDuration + 2.5) * 1000 + 200;
+    setTimeout(function () {
+      if (celebration.parentNode) {
+        celebration.parentNode.removeChild(celebration);
+      }
+    }, cleanupDelay);
   }
-}
+
+  // --- HÀM 1: TẠO TEXTURE HÌNH TRÒN SẮC NÉT (KHÔNG BÓNG MỜ) CÓ CACHE ---
+  var _cachedCircleTexture = null;
+  function getCircleTexture() {
+    if (_cachedCircleTexture) return _cachedCircleTexture;
+    var canvas = document.createElement('canvas');
+    canvas.width = 64;
+    canvas.height = 64;
+    var ctx = canvas.getContext('2d');
+
+    // Làm sạch nền (để nền hoàn toàn trong suốt)
+    ctx.clearRect(0, 0, 64, 64);
+
+    // Vẽ hình tròn cơ bản sắc nét, KHÔNG dùng shadowBlur để tránh lỗi viền
+    ctx.beginPath();
+    ctx.arc(32, 32, 30, 0, Math.PI * 2);
+    ctx.fillStyle = '#ffffff'; // Phải là màu trắng để pha ra đúng mã hexColor
+    ctx.fill();
+
+    _cachedCircleTexture = canvas.toDataURL();
+    return _cachedCircleTexture;
+  }
+
+  // --- TẠO TEXTURE HÌNH NGÔI SAO HOẶC ĐIỂM SÁNG CHO PHÁO HOA ĐỂ KHÔNG PHẢI TẢI TỪ MẠNG ---
+  var _cachedStarTexture = null;
+  function getStarTexture() {
+    if (_cachedStarTexture) return _cachedStarTexture;
+    var canvas = document.createElement('canvas');
+    canvas.width = 64;
+    canvas.height = 64;
+    var ctx = canvas.getContext('2d');
+
+    // Tạo gradient tỏa sáng mượt mà từ tâm ra
+    var grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+    grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+    grad.addColorStop(0.3, 'rgba(255, 255, 255, 0.8)');
+    grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(32, 32, 32, 0, Math.PI * 2);
+    ctx.fill();
+
+    _cachedStarTexture = canvas.toDataURL();
+    return _cachedStarTexture;
+  }
+
+  // --- HÀM 2: CHẠY HIỆU ỨNG PARTICLE KHI DÁN BI THÀNH CÔNG ---
+  function triggerSnapEffect(pos, hexColor) {
+    var effect = document.createElement('a-entity');
+
+    effect.setAttribute('position', pos.x + ' ' + pos.y + ' ' + (pos.z + 0.05));
+
+    effect.setAttribute('particle-system', {
+      texture: 'url(' + getCircleTexture() + ')',
+      color: hexColor,               // Lấy đúng màu của bi
+
+      type: 3,                       // Kiểu 3: Hình đĩa (Disc) - ép hạt sinh ra theo hình tròn
+      particleCount: 25,
+
+      // MẸO: Sinh hạt ngẫu nhiên trong một bán kính hình tròn là 0.15 
+      // (Thay vì bắt chúng bắn từ tâm ra xa)
+      positionSpread: '0.15 0.15 0',
+
+      velocityValue: '0 0 0',
+      velocitySpread: '0.02 0.02 0', // Vận tốc cực nhỏ, gần như chỉ đứng yên tại chỗ
+      accelerationValue: '0 0 0',
+
+      maxAge: 0.35,                  // Tồn tại trong thời gian ngắn
+      size: '0.15',                  // Kích thước hạt nhỏ gọn
+      randomise: true,
+
+      // QUAN TRỌNG NHẤT: blending 1 (Normal) giữ nguyên màu gốc, không làm sáng chói
+      blending: 1,
+      opacity: '1, 0',               // Xuất hiện rõ rồi mờ dần
+      duration: 0.1                  // Chỉ phụt ra 1 nhịp duy nhất
+    });
+
+    var wheel = $('wheelRoot');
+    if (wheel) {
+      wheel.appendChild(effect);
+      setTimeout(function () {
+        if (effect.parentNode) effect.parentNode.removeChild(effect);
+      }, 1000);
+    }
+  }
 
   function checkLevelComplete() {
     var lv = LEVELS[currentLevel];
@@ -765,46 +765,46 @@ function triggerSnapEffect(pos, hexColor) {
         // Mục đích là phá vỡ trục rơi thẳng đứng, giúp bi chạm đất sẽ nảy chéo đi và lăn nhẹ lộc cộc thay vì nảy tại chỗ.
         if (el.body) {
           if (el.body.velocity && el.body.velocity.set) {
-             var randX = (Math.random() - 0.5) * 1.2; // Tăng lực văng ngang ngẫu nhiên
-             var randZ = (Math.random() - 0.5) * 1.2;
-             el.body.velocity.set(randX, 0, randZ);
+            var randX = (Math.random() - 0.5) * 1.2; // Tăng lực văng ngang ngẫu nhiên
+            var randZ = (Math.random() - 0.5) * 1.2;
+            el.body.velocity.set(randX, 0, randZ);
           }
           if (el.body.angularVelocity && el.body.angularVelocity.set) {
-             var rotX = (Math.random() - 0.5) * 10.0; // Tăng lực xoáy để khi chạm đất ma sát sẽ kéo bi chạy đi
-             var rotY = (Math.random() - 0.5) * 10.0;
-             var rotZ = (Math.random() - 0.5) * 10.0;
-             el.body.angularVelocity.set(rotX, rotY, rotZ);
+            var rotX = (Math.random() - 0.5) * 10.0; // Tăng lực xoáy để khi chạm đất ma sát sẽ kéo bi chạy đi
+            var rotY = (Math.random() - 0.5) * 10.0;
+            var rotZ = (Math.random() - 0.5) * 10.0;
+            el.body.angularVelocity.set(rotX, rotY, rotZ);
           }
         }
-        
+
         if (syncFromHome) syncPhysicsBodyFromDataHome(el);
       };
       el.addEventListener('body-loaded', onBody);
-      
+
       // Giảm độ nảy (restitution: 0.1) và tăng cản (damping: 0.7) để va chạm vào nhau không bị văng xa
       var s =
-  'shape: sphere; sphereRadius: ' +
-  BALL_RADIUS +
-  '; mass: ' +
-  BALL_PHYS_MASS +
-  '; linearDamping: 0.7; angularDamping: 0.7; restitution: 0.1; friction: 0.8';
+        'shape: sphere; sphereRadius: ' +
+        BALL_RADIUS +
+        '; mass: ' +
+        BALL_PHYS_MASS +
+        '; linearDamping: 0.7; angularDamping: 0.7; restitution: 0.1; friction: 0.8';
       el.setAttribute('dynamic-body', s);
       setTimeout(function () {
         if (fired) return;
         fired = true;
         el.removeEventListener('body-loaded', onBody);
-        
+
         if (el.body) {
           if (el.body.velocity && el.body.velocity.set) {
-             var randX = (Math.random() - 0.5) * 1.2;
-             var randZ = (Math.random() - 0.5) * 1.2;
-             el.body.velocity.set(randX, 0, randZ);
+            var randX = (Math.random() - 0.5) * 1.2;
+            var randZ = (Math.random() - 0.5) * 1.2;
+            el.body.velocity.set(randX, 0, randZ);
           }
           if (el.body.angularVelocity && el.body.angularVelocity.set) {
-             var rotX = (Math.random() - 0.5) * 10.0;
-             var rotY = (Math.random() - 0.5) * 10.0;
-             var rotZ = (Math.random() - 0.5) * 10.0;
-             el.body.angularVelocity.set(rotX, rotY, rotZ);
+            var rotX = (Math.random() - 0.5) * 10.0;
+            var rotY = (Math.random() - 0.5) * 10.0;
+            var rotZ = (Math.random() - 0.5) * 10.0;
+            el.body.angularVelocity.set(rotX, rotY, rotZ);
           }
         }
 
@@ -822,46 +822,46 @@ function triggerSnapEffect(pos, hexColor) {
     var ridx = parseInt(ballEl.getAttribute('data-ring-index'), 10);
     var lv = LEVELS[currentLevel];
     if (!lv) return { type: 'none' };
-    
+
     ballEl.object3D.updateMatrixWorld(true);
     var pos = new THREE.Vector3();
     ballEl.object3D.getWorldPosition(pos);
-    
+
     var best = null;
     var bestD = 999; // Bắt đầu bằng một khoảng cách rất lớn thay vì SNAP_DIST
-    
+
     // THÊM MỚI: Mảng cấu hình khoảng cách hút bi cho 3 vòng (Ngoài, Giữa, Trong cùng)
     // Bạn có thể tinh chỉnh các số này nếu thấy vẫn chưa vừa ý
-    var ringSnapDistances = [0.45, 0.28, 0.16]; 
-    
+    var ringSnapDistances = [0.45, 0.28, 0.16];
+
     for (var s = 0; s < slots.length; s++) {
       var sl = slots[s];
       if (sl.filled) continue;
-      
+
       var active = false;
       for (var a = 0; a < lv.indices.length; a++) {
         if (lv.indices[a] === sl.index) active = true;
       }
       if (!active) continue;
-      
+
       var sp = new THREE.Vector3();
       sl.el.object3D.updateMatrixWorld(true);
       sl.el.object3D.getWorldPosition(sp);
-      
+
       var d = pos.distanceTo(sp);
-      
+
       // Lấy khoảng cách cho phép tương ứng với vòng của ô đang xét
       var allowedDist = ringSnapDistances[sl.ringIndex];
-      
+
       // Nếu bi nằm trong vùng cho phép của ô này VÀ là ô gần viên bi nhất
       if (d < allowedDist && d < bestD) {
         bestD = d;
         best = sl;
       }
     }
-    
+
     if (!best) return { type: 'none' };
-    
+
     // Kiểm tra xem có gắn đúng MÀU và đúng VÒNG SẮC ĐỘ không
     if (best.index !== widx || best.ringIndex !== ridx || best.el.getAttribute('data-color-id') !== cid) {
       return { type: 'wrong' };
@@ -872,19 +872,19 @@ function triggerSnapEffect(pos, hexColor) {
   function applySnapSuccess(ballEl, best) {
     best.filled = true;
     // Lưu lại bằng key: index_ringIndex (ví dụ: "0_2")
-    filledMask[best.index + '_' + best.ringIndex] = true; 
+    filledMask[best.index + '_' + best.ringIndex] = true;
     fadeInSlot(best.index, best.ringIndex);
     removeBallPhysics(ballEl);
-    
+
     var p = slotWorldPosition(best.index, best.ringIndex);
     ballEl.setAttribute('position', p.x + ' ' + p.y + ' ' + (p.z + 0.07));
     var hexColor = WHEEL_COLORS[best.index].hex[best.ringIndex]; // Lấy mã màu của ô/bi
     triggerSnapEffect(p, hexColor);
-    
+
     // Ngừng tương tác để tia raycaster bỏ qua viên bi này
     ballEl.setAttribute('class', '');
     ballEl.setAttribute('data-placed', '1');
-    
+
     // Thêm hiệu ứng thu nhỏ dần (giống như bị hút vào lỗ)
     ballEl.setAttribute('animation__scale', {
       property: 'scale',
@@ -894,7 +894,7 @@ function triggerSnapEffect(pos, hexColor) {
     });
 
     // Ẩn hẳn viên bi sau khi thu nhỏ để tối ưu hiệu năng
-    setTimeout(function() {
+    setTimeout(function () {
       ballEl.setAttribute('visible', 'false');
     }, 400);
 
@@ -926,28 +926,27 @@ function triggerSnapEffect(pos, hexColor) {
     // --- LOGIC MỚI: Kiểm tra khoảng cách người chơi đến bảng màu ---
     var camPos = new THREE.Vector3();
     camEl.object3D.getWorldPosition(camPos); // Lấy tọa độ thật của người chơi
-    
+
     var boardPos = new THREE.Vector3();
     if ($('wheelPlane') && $('wheelPlane').object3D) {
-       $('wheelPlane').object3D.getWorldPosition(boardPos);
+      $('wheelPlane').object3D.getWorldPosition(boardPos);
     } else {
-       // BỔ SUNG THÊM 3 DÒNG NÀY ĐỂ TRÁNH LỖI
-       boardPos.set(WHEEL_CENTER.x, WHEEL_CENTER.y, WHEEL_CENTER.z); 
+      // BỔ SUNG THÊM 3 DÒNG NÀY ĐỂ TRÁNH LỖI
+      boardPos.set(WHEEL_CENTER.x, WHEEL_CENTER.y, WHEEL_CENTER.z);
     }
-    
+
     // Tính khoảng cách từ người chơi đến bảng màu (WHEEL_CENTER)
     var distToBoard = camPos.distanceTo(boardPos);
-    
-    // Khoảng cách tối đa (mét) được phép dán bi. Bạn có thể tăng/giảm số này!
-    // Mặc định lúc mới vào game người chơi đứng cách bảng khoảng 2 mét.
-    var MAX_INTERACT_DIST = 3.5; 
-    
+
+    // Khoảng cách tối đa (mét) được phép dán bi. Đã tăng lên 10m để tia laser dài hơn
+    var MAX_INTERACT_DIST = 10.0;
+
     var m = matchSlotForBall(ballEl);
-    
+
     // Nếu người chơi ở quá xa, ép kết quả thành 'none' (trượt) để bi rơi xuống đất
     if (distToBoard > MAX_INTERACT_DIST) {
-        m.type = 'none';
-        showToast('Bạn đang đứng quá xa bảng màu! Hãy tiến lại gần.', 2000);
+      m.type = 'none';
+      showToast('Bạn đang đứng quá xa bảng màu! Hãy tiến lại gần.', 2000);
     }
     // ---------------------------------------------------------------
 
@@ -957,22 +956,22 @@ function triggerSnapEffect(pos, hexColor) {
         GameAudio.playWrong();
         showToast('Sai vị trí! Thử ô đúng trên vòng.', 2000);
       }
-      
+
       // Lấy tọa độ lúc vừa nhả tay
       var currentPos = ballEl.getAttribute('position');
       var board = document.getElementById('gameBoard');
       var boardY = board && board.object3D ? board.object3D.position.y : 0;
       var floorY = 0.11 - boardY; // Trừ đi độ lệch của khối gameBoard
-      
+
       // Tạo hiệu ứng rơi thẳng xuống sàn (Y = 0.11)
-     // Tạo hiệu ứng rơi thẳng xuống sàn thật
-     ballEl.setAttribute('animation', {
-      property: 'position',
-      to: currentPos.x + ' ' + floorY + ' ' + currentPos.z,
-      dur: 300,
-      easing: 'easeInQuad'
-    });
-    return;
+      // Tạo hiệu ứng rơi thẳng xuống sàn thật
+      ballEl.setAttribute('animation', {
+        property: 'position',
+        to: currentPos.x + ' ' + floorY + ' ' + currentPos.z,
+        dur: 300,
+        easing: 'easeInQuad'
+      });
+      return;
     }
 
     // Xóa hiệu ứng rơi (nếu có) để dán bi vào bảng màu
@@ -996,7 +995,7 @@ function triggerSnapEffect(pos, hexColor) {
 
   function releaseBall(ballEl) {
     if (!ballsRoot || !ballEl || !ballEl.object3D) return;
-    
+
     // Giữ nguyên logic cập nhật tọa độ khi nhả tay từ controller VR
     if (ballEl.parentNode !== ballsRoot) {
       ballEl.object3D.updateMatrixWorld(true);
@@ -1012,18 +1011,18 @@ function triggerSnapEffect(pos, hexColor) {
 
     // --- CHỈ KIỂM TRA VỊ TRÍ BI VÀ BẢNG MÀU (Đã bỏ check khoảng cách người chơi) ---
     var m = matchSlotForBall(ballEl);
-    
+
     // Nếu thả trúng ô và thỏa điều kiện
     if (m.type === 'ok') {
-        ballEl.removeAttribute('animation');
-        applySnapSuccess(ballEl, m.best);
-        return; // Dừng lại! Dán bi thành công, không cho rơi xuống đất nữa.
-    } 
+      ballEl.removeAttribute('animation');
+      applySnapSuccess(ballEl, m.best);
+      return; // Dừng lại! Dán bi thành công, không cho rơi xuống đất nữa.
+    }
 
     // Nếu thả sai ô (sai màu hoặc sai vòng)
     if (m.type === 'wrong') {
-        GameAudio.playWrong();
-        showToast('Sai vị trí! Thử ô đúng trên vòng.', 2000);
+      GameAudio.playWrong();
+      showToast('Sai vị trí! Thử ô đúng trên vòng.', 2000);
     }
 
     // --- NẾU KHÔNG GẮN ĐƯỢC (Thả trượt ra ngoài hoặc sai ô) THÌ CHO RƠI TỰ DO ---
@@ -1032,8 +1031,8 @@ function triggerSnapEffect(pos, hexColor) {
       var currentPos = ballEl.getAttribute('position');
       var board = document.getElementById('gameBoard');
       var boardY = board && board.object3D ? board.object3D.position.y : 0;
-      var floorY = 0.11 - boardY; 
-      
+      var floorY = 0.11 - boardY;
+
       ballEl.setAttribute('animation', {
         property: 'position',
         to: currentPos.x + ' ' + floorY + ' ' + currentPos.z,
@@ -1155,9 +1154,9 @@ function triggerSnapEffect(pos, hexColor) {
       camEl.setAttribute(
         'look-controls',
         'pointerLockEnabled: false; enabled: true; mouseEnabled: ' +
-          (mobile ? 'true' : 'false') +
-          '; touchEnabled: ' +
-          (mobile ? 'true' : 'false')
+        (mobile ? 'true' : 'false') +
+        '; touchEnabled: ' +
+        (mobile ? 'true' : 'false')
       );
     } else {
       useDesktopRightLook = true;
@@ -1181,9 +1180,9 @@ function triggerSnapEffect(pos, hexColor) {
     raycaster.setFromCamera(ndc, cam);
     var o = raycaster.ray.origin;
     var d = raycaster.ray.direction;
-    var targetZ = -1.95; 
+    var targetZ = -1.95;
     var t = (targetZ - o.z) / d.z;
-    
+
     // Lưu tọa độ đích vào biến toàn cục (Tọa độ World)
     if (t > 0 && t < 10) {
       targetHoldPos.set(o.x + d.x * t, o.y + d.y * t, o.z + d.z * t);
@@ -1235,14 +1234,14 @@ function triggerSnapEffect(pos, hexColor) {
         if (!el) continue;
         if (!el.classList || !el.classList.contains('grabbable')) continue;
         if (el.getAttribute('data-placed') === '1') continue;
-        
+
         removePendingForBall(el);
         removeBallPhysics(el);
         el.removeAttribute('animation'); // Ngăn bi rơi nếu đang rớt mà chộp lại
         el.setAttribute('visible', true);
         if (el.object3D) el.object3D.visible = true;
-        
-      
+
+
         activeGrabBall = el;
         vrGrabHand = handEl;
         grabDistance = hits[h].distance;
@@ -1320,23 +1319,23 @@ function triggerSnapEffect(pos, hexColor) {
       }
       if (e.button !== 0) return;
       if ($('ui-root').classList.contains('panel-active')) return;
-      
+
       var el = pickBallFromClientXY(e.clientX, e.clientY);
       if (!el) return;
-      
+
       e.preventDefault();
       e.stopPropagation();
       down = true;
-      
+
       // CHUYỂN XUỐNG ĐÂY: Chỉ gán khi đã tìm thấy 'el'
       mouseGrab = el;
       activeGrabBall = el;
-      
+
       GameAudio.resume();
       GameAudio.playPickup();
       removePendingForBall(el);
       removeBallPhysics(el);
-      
+
       el.removeAttribute('animation');
       el.setAttribute('visible', true);
       if (el.object3D) el.object3D.visible = true;
@@ -1371,35 +1370,35 @@ function triggerSnapEffect(pos, hexColor) {
       if (e.button !== 0) return;
       if (!down || !mouseGrab) return;
       down = false;
-      
+
       var ball = mouseGrab;
-      
+
       // CHUYỂN XUỐNG ĐÂY: Làm trống biến SAU KHI đã lưu lại viên bi vào biến 'ball'
       mouseGrab = null;
       activeGrabBall = null;
-      
+
       releaseBall(ball);
     });
   }
   function setVrMenuVisible(on) {
     var m = $('vrMenu');
     if (!m) return;
-    
+
     m.setAttribute('visible', on);
-    
+
     // FIX LỖI MENU TÀNG HÌNH CHẮN TIA CLICK
     if (on) {
       // Khi cần hiện, tính toán lại độ cao mắt hiện tại để đưa menu ra trước mặt
       var camPos = new THREE.Vector3();
       if (camEl && camEl.object3D) {
-         camEl.object3D.getWorldPosition(camPos);
-         m.setAttribute('position', '0 ' + camPos.y + ' -1.15'); 
+        camEl.object3D.getWorldPosition(camPos);
+        m.setAttribute('position', '0 ' + camPos.y + ' -1.15');
       } else {
-         m.setAttribute('position', '0 1.6 -1.15'); // fallback
+        m.setAttribute('position', '0 1.6 -1.15'); // fallback
       }
     } else {
       // Khi ẩn, vứt nó xuống sâu dưới lòng đất để không cản trở tia raycaster
-      m.setAttribute('position', '0 -999 0'); 
+      m.setAttribute('position', '0 -999 0');
     }
   }
   function syncVrHardLabel() {
@@ -1425,34 +1424,35 @@ function triggerSnapEffect(pos, hexColor) {
     for (var s = 0; s < slots.length; s++) slots[s].filled = false;
     spawnBallsForLevel();
     setSlotHighlight();
-    
+
     // Hiện Modal thay vì chạy game ngay lập tức
-    showLevelModal(currentLevel, function() {
+    showLevelModal(currentLevel, function () {
       startTimerIfHard();
       setHud();
       $('hint-bar').classList.add('visible');
       if (scene.play) scene.play();
     });
   }
-// Hàm tự động cân chỉnh chiều cao khu vực chơi
-function adjustHeight() {
-  if (!camEl || !camEl.object3D) return;
-  var camPos = new THREE.Vector3();
-  camEl.object3D.getWorldPosition(camPos);
-  
-  var currentCamY = camPos.y;
-  // Fallback an toàn: nếu kính VR chưa kịp nhận diện sàn, lấy mức 1.6m làm chuẩn
-  if (currentCamY < 0.5) currentCamY = 1.6; 
-  
-  // Tâm bánh xe trong thiết kế đang cao 1.7m. 
-  // Trừ đi 1.7 để tìm ra độ lệch cần thiết nâng/hạ toàn bộ gameBoard.
-  var targetY = currentCamY - 1.7; 
-  
-  var board = $('gameBoard');
-  if (board) {
-    board.setAttribute('position', '0 ' + targetY + ' 0');
+  // Hàm tự động cân chỉnh chiều cao khu vực chơi
+  function adjustHeight() {
+    if (!camEl || !camEl.object3D) return;
+    var camPos = new THREE.Vector3();
+    camEl.object3D.getWorldPosition(camPos);
+
+    var currentCamY = camPos.y;
+    // Fallback an toàn: nếu kính VR chưa kịp nhận diện sàn, lấy mức 1.6m làm chuẩn
+    if (currentCamY < 0.5) currentCamY = 1.6;
+
+    // Tâm bánh xe trong thiết kế đang cao 1.7m. 
+    // Trừ đi 2.0 để hạ thấp toàn bộ gameBoard xuống ngang tầm ngực (thoải mái tay hơn).
+    var targetY = currentCamY - 2.0;
+
+    var board = $('gameBoard');
+    if (board) {
+      // Kéo toàn bộ bảng và khay lại gần người chơi thêm 0.5m (Z = 0.5)
+      board.setAttribute('position', '0 ' + targetY + ' 0.5');
+    }
   }
-}
   function initGame() {
     scene = $('mainScene');
     wheelRoot = $('wheelRoot');
@@ -1472,17 +1472,17 @@ function adjustHeight() {
     }
     drawWheelCanvas();
     applyWheelTexture();
-    
+
     buildSlots();
     buildLabels();
     bindHand($('handRight'));
     bindHand($('handLeft'));
-    scene.addEventListener('enter-vr', function() {
+    scene.addEventListener('enter-vr', function () {
       applyLookControlsForMode();
       // Chờ 800ms để kính VR Meta Quest dò xong mặt sàn và chiều cao người chơi
-      setTimeout(function() {
+      setTimeout(function () {
         adjustHeight();
-        
+
         // Đưa Menu VR ra ngay chính giữa tầm mắt
         var vrMenu = $('vrMenu');
         var camPos = new THREE.Vector3();
@@ -1493,13 +1493,13 @@ function adjustHeight() {
             vrMenu.setAttribute('position', '0 ' + camPos.y + ' -1.2');
           }
         }
-      }, 800); 
+      }, 800);
     });
 
     scene.addEventListener('exit-vr', function () {
       setTimeout(applyLookControlsForMode, 120);
       // Khi về lại Web 2D, chỉnh chiều cao lại theo màn hình máy tính
-      setTimeout(adjustHeight, 200); 
+      setTimeout(adjustHeight, 200);
     });
 
     // VÀ THÊM DÒNG NÀY VÀO CUỐI CÙNG CỦA HÀM initGame() (ngay trên dấu ngoặc nhọn kết thúc hàm):
@@ -1515,7 +1515,7 @@ function adjustHeight() {
         // Dùng tick của A-Frame để chắc chắn chạy trong immersive WebXR trên Quest.
         scene.setAttribute('vr-game-tick', '');
       }
-      
+
       // -- Warmup (Khởi động trước) Shaders cho Particle System để chống giật lag lần đầu bắn
       var dummyParticle = document.createElement('a-entity');
       dummyParticle.setAttribute('position', '0 -99 0');
@@ -1526,10 +1526,10 @@ function adjustHeight() {
         duration: 0.1
       });
       scene.appendChild(dummyParticle);
-      setTimeout(function() {
+      setTimeout(function () {
         if (dummyParticle.parentNode) dummyParticle.parentNode.removeChild(dummyParticle);
       }, 500);
-      
+
       if (scene.pause) scene.pause();
     });
     $('btnStart').addEventListener('click', function () {
