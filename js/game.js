@@ -773,13 +773,13 @@ function triggerSnapEffect(pos, hexColor) {
       };
       el.addEventListener('body-loaded', onBody);
       
-      // Tăng ma sát (friction), lực cản (damping), giảm độ nảy (restitution)
+      // Tự nhiên hơn: cho phép bi lăn (damping thấp) và nảy nhẹ (restitution 0.4)
       var s =
   'shape: sphere; sphereRadius: ' +
   BALL_RADIUS +
   '; mass: ' +
   BALL_PHYS_MASS +
-  '; linearDamping: 0.8; angularDamping: 0.8; restitution: 0.2; friction: 0.8';
+  '; linearDamping: 0.15; angularDamping: 0.15; restitution: 0.4; friction: 0.5';
       el.setAttribute('dynamic-body', s);
       setTimeout(function () {
         if (fired) return;
