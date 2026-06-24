@@ -761,34 +761,62 @@ function triggerSnapEffect(pos, hexColor) {
       var onBody = function () {
         if (fired) return;
         fired = true;
-        el.removeEventListener('body-loaded', onBody);
-        
-        // Xóa vận tốc tay lúc nhả để bi rơi tự nhiên thẳng xuống, không bị văng
+        // Giữ lại 10% vận tốc văng của tay cầm (và giới hạn tối đa) để bi rơi có độ văng nhẹ lộc cộc tự nhiên
         if (el.body) {
-          if (el.body.velocity && el.body.velocity.set) el.body.velocity.set(0, 0, 0);
-          if (el.body.angularVelocity && el.body.angularVelocity.set) el.body.angularVelocity.set(0, 0, 0);
+          if (el.body.velocity && el.body.velocity.set) {
+             var vx = el.body.velocity.x * 0.1;
+             var vy = el.body.velocity.y * 0.1;
+             var vz = el.body.velocity.z * 0.1;
+             // Khống chế không cho văng ngang quá mạnh
+             if (vx > 0.3) vx = 0.3; if (vx < -0.3) vx = -0.3;
+             if (vz > 0.3) vz = 0.3; if (vz < -0.3) vz = -0.3;
+             el.body.velocity.set(vx, vy, vz);
+          }
+          // Giữ lại chút lực xoay
+          if (el.body.angularVelocity && el.body.angularVelocity.set) {
+             el.body.angularVelocity.set(
+               el.body.angularVelocity.x * 0.2,
+               el.body.angularVelocity.y * 0.2,
+               el.body.angularVelocity.z * 0.2
+             );
+          }
         }
         
         if (syncFromHome) syncPhysicsBodyFromDataHome(el);
       };
       el.addEventListener('body-loaded', onBody);
       
-      // Tự nhiên hơn: cho phép bi lăn (damping thấp) và nảy nhẹ (restitution 0.4)
+      // Tăng nhẹ lực cản (damping 0.5) và ma sát (0.7) để bi lăn tự nhiên nhưng dừng lại nhanh, giới hạn trong phạm vi nhỏ.
       var s =
   'shape: sphere; sphereRadius: ' +
   BALL_RADIUS +
   '; mass: ' +
   BALL_PHYS_MASS +
-  '; linearDamping: 0.15; angularDamping: 0.15; restitution: 0.4; friction: 0.5';
+  '; linearDamping: 0.5; angularDamping: 0.5; restitution: 0.3; friction: 0.7';
       el.setAttribute('dynamic-body', s);
       setTimeout(function () {
         if (fired) return;
         fired = true;
         el.removeEventListener('body-loaded', onBody);
-        
+        // Giữ lại 10% vận tốc văng của tay cầm (và giới hạn tối đa) để bi rơi có độ văng nhẹ lộc cộc tự nhiên, không bị rớt thẳng đuột 1 đường cọc lóc.
         if (el.body) {
-          if (el.body.velocity && el.body.velocity.set) el.body.velocity.set(0, 0, 0);
-          if (el.body.angularVelocity && el.body.angularVelocity.set) el.body.angularVelocity.set(0, 0, 0);
+          if (el.body.velocity && el.body.velocity.set) {
+             var vx = el.body.velocity.x * 0.1;
+             var vy = el.body.velocity.y * 0.1;
+             var vz = el.body.velocity.z * 0.1;
+             // Khống chế không cho văng ngang quá mạnh
+             if (vx > 0.3) vx = 0.3; if (vx < -0.3) vx = -0.3;
+             if (vz > 0.3) vz = 0.3; if (vz < -0.3) vz = -0.3;
+             el.body.velocity.set(vx, vy, vz);
+          }
+          // Giữ lại chút lực xoay
+          if (el.body.angularVelocity && el.body.angularVelocity.set) {
+             el.body.angularVelocity.set(
+               el.body.angularVelocity.x * 0.2,
+               el.body.angularVelocity.y * 0.2,
+               el.body.angularVelocity.z * 0.2
+             );
+          }
         }
 
         if (syncFromHome && el.body) syncPhysicsBodyFromDataHome(el);
